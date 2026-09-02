@@ -1,0 +1,3559 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>میدان بزرگ — شبیه‌ساز فوتبال سه‌بعدی</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;400;600;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060d18;
+      --panel: rgba(10, 22, 38, .92);
+      --line: #1d3550;
+      --txt: #eef4fb;
+      --dim: #8fa5bd;
+      --lime: #c6f24e;
+      --gold: #ffc94a;
+      --blue: #2f7bff;
+      --red: #ff4148
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--txt);
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      user-select: none
+    }
+
+    .display {
+      font-family: 'Lalezar', cursive;
+      font-weight: 400
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0
+    }
+
+    #stage canvas {
+      display: block
+    }
+
+    #vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 6, 14, .55) 100%)
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    #menu {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 34px;
+      padding: 5vh 5vw;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      background: linear-gradient(102deg, rgba(3, 9, 18, .94) 8%, rgba(3, 9, 18, .62) 42%, rgba(3, 9, 18, .12) 72%, transparent)
+    }
+
+    .kicker {
+      color: var(--lime);
+      font-size: 13px;
+      letter-spacing: .35em;
+      font-weight: 800;
+      margin-bottom: 6px
+    }
+
+    #gameTitle {
+      font-size: clamp(56px, 9vw, 110px);
+      line-height: .95;
+      color: #fff;
+      text-shadow: 0 6px 0 rgba(0, 0, 0, .35), 0 0 60px rgba(47, 123, 255, .35)
+    }
+
+    #gameTitle em {
+      font-style: normal;
+      color: var(--gold)
+    }
+
+    #gameTitle::after {
+      content: "";
+      display: block;
+      width: 180px;
+      height: 8px;
+      margin-top: 14px;
+      background: linear-gradient(90deg, var(--lime), transparent);
+      transform: skewX(-30deg)
+    }
+
+    .tagline {
+      margin-top: 14px;
+      color: var(--dim);
+      font-size: 15px
+    }
+
+    .mnav {
+      margin-top: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .mbtn {
+      cursor: pointer;
+      border: none;
+      text-align: right;
+      font-family: 'Lalezar', cursive;
+      font-size: 24px;
+      color: var(--txt);
+      background: linear-gradient(90deg, rgba(20, 40, 66, .95), rgba(20, 40, 66, .55));
+      padding: 10px 34px 10px 60px;
+      transform: skewX(-12deg);
+      border-right: 5px solid var(--lime);
+      transition: .18s;
+      min-width: 280px
+    }
+
+    .mbtn>span {
+      display: inline-block;
+      transform: skewX(12deg)
+    }
+
+    .mbtn:hover {
+      transform: skewX(-12deg) translateX(-10px);
+      background: linear-gradient(90deg, var(--blue), rgba(47, 123, 255, .25));
+      border-color: var(--gold)
+    }
+
+    .mbtn small {
+      display: block;
+      font-family: 'Vazirmatn';
+      font-size: 12px;
+      color: var(--dim);
+      font-weight: 400
+    }
+
+    #vsCard {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--dim);
+      font-size: 13px
+    }
+
+    .crest {
+      width: 52px;
+      height: 60px;
+      clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Lalezar';
+      font-size: 22px;
+      color: #fff
+    }
+
+    .crest.c0 {
+      background: linear-gradient(160deg, #2f7bff, #0d3a8f)
+    }
+
+    .crest.c1 {
+      background: linear-gradient(160deg, #ff4148, #7c1216)
+    }
+
+    #menuFoot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      color: var(--dim);
+      font-size: 12px;
+      padding-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 14px
+    }
+
+    #ctrlHint {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      max-width: 100%
+    }
+
+    #ctrlHint b {
+      color: var(--txt);
+      background: #12253c;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-weight: 600;
+      font-size: 11px
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+      position: relative
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: var(--lime)
+    }
+
+    .panel h3 {
+      font-family: 'Lalezar';
+      font-size: 26px;
+      padding: 14px 22px 0
+    }
+
+    #settingsPanel,
+    #helpPanel {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(3, 8, 16, .7)
+    }
+
+    #settingsCard {
+      width: min(560px, 92vw);
+      padding-bottom: 22px
+    }
+
+    .segRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 22px
+    }
+
+    .segRow label {
+      width: 130px;
+      color: var(--dim);
+      font-size: 14px
+    }
+
+    .seg {
+      display: flex;
+      gap: 6px
+    }
+
+    .seg button {
+      cursor: pointer;
+      font-family: 'Vazirmatn';
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--dim);
+      background: #0e2036;
+      border: 1px solid var(--line);
+      padding: 7px 16px;
+      transform: skewX(-10deg);
+      transition: .15s
+    }
+
+    .seg button>span {
+      display: inline-block;
+      transform: skewX(10deg)
+    }
+
+    .seg button:hover {
+      color: #fff
+    }
+
+    .seg button.on {
+      background: var(--lime);
+      color: #0b1502;
+      border-color: var(--lime)
+    }
+
+    .pbtnRow {
+      display: flex;
+      gap: 10px;
+      padding: 8px 22px
+    }
+
+    .pbtn {
+      cursor: pointer;
+      font-family: 'Lalezar';
+      font-size: 19px;
+      padding: 8px 30px;
+      border: none;
+      color: #0b1502;
+      background: var(--lime);
+      transform: skewX(-10deg)
+    }
+
+    .pbtn.alt {
+      background: #13293f;
+      color: var(--txt);
+      border: 1px solid var(--line)
+    }
+
+    .pbtn:hover {
+      filter: brightness(1.12)
+    }
+
+    #helpCard {
+      width: min(680px, 94vw);
+      padding-bottom: 20px;
+      max-height: 86vh;
+      overflow: auto
+    }
+
+    .helpGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 26px;
+      padding: 10px 24px;
+      font-size: 13px
+    }
+
+    .helpGrid h4 {
+      font-family: 'Lalezar';
+      font-size: 19px;
+      color: var(--gold);
+      grid-column: span 2;
+      margin-top: 6px
+    }
+
+    kbd {
+      background: #12253c;
+      border: 1px solid var(--line);
+      border-bottom-width: 3px;
+      border-radius: 5px;
+      padding: 1px 8px;
+      font-size: 11px;
+      color: #fff
+    }
+
+    .hrow {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #16304c;
+      padding: 6px 0
+    }
+
+    #hud {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none
+    }
+
+    #sb {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: flex;
+      align-items: stretch;
+      direction: ltr;
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .45))
+    }
+
+    .sbTeam {
+      font-family: 'Lalezar';
+      font-size: 20px;
+      padding: 6px 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      transform: skewX(-10deg)
+    }
+
+    .sbTeam.h {
+      background: linear-gradient(120deg, #2f7bff, #123c8c)
+    }
+
+    .sbTeam.a {
+      background: linear-gradient(120deg, #ff4148, #7c1216)
+    }
+
+    .sbMid {
+      background: #0a1626;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 16px;
+      border-left: 2px solid var(--lime);
+      border-right: 2px solid var(--lime)
+    }
+
+    #score {
+      font-family: 'Lalezar';
+      font-size: 26px;
+      line-height: 1;
+      color: #fff
+    }
+
+    #clock {
+      font-size: 12px;
+      color: var(--lime);
+      font-weight: 800
+    }
+
+    #halfTag {
+      font-size: 10px;
+      color: var(--dim)
+    }
+
+    #comm {
+      position: absolute;
+      top: 80px;
+      left: 16px;
+      font-size: 14px;
+      color: #ffe9b3;
+      text-shadow: 0 2px 6px #000;
+      opacity: 0;
+      transition: opacity .4s;
+      font-weight: 600;
+      max-width: 340px
+    }
+
+    #comm.show {
+      opacity: 1
+    }
+
+    #banner {
+      position: absolute;
+      top: 26%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      opacity: 0;
+      transform: scale(.7);
+      transition: .25s
+    }
+
+    #banner.show {
+      opacity: 1;
+      transform: scale(1)
+    }
+
+    #bMain {
+      font-family: 'Lalezar';
+      font-size: clamp(52px, 9vw, 110px);
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(198, 242, 78, .55), 0 6px 0 rgba(0, 0, 0, .4)
+    }
+
+    #banner.goal #bMain {
+      color: var(--gold);
+      text-shadow: 0 0 40px rgba(255, 201, 74, .8), 0 6px 0 rgba(0, 0, 0, .45)
+    }
+
+    #bSub {
+      font-size: 20px;
+      color: #e6f0ff;
+      text-shadow: 0 2px 8px #000;
+      font-weight: 600
+    }
+
+    #radar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 1px solid #1c3a5a;
+      border-radius: 8px;
+      background: rgba(4, 14, 10, .72)
+    }
+
+    #stam {
+      position: absolute;
+      bottom: 14px;
+      right: 16px;
+      width: 170px
+    }
+
+    #stam .lbl {
+      font-size: 11px;
+      color: var(--dim);
+      margin-bottom: 3px
+    }
+
+    #stamBar {
+      height: 7px;
+      background: #0c1a2b;
+      border: 1px solid var(--line);
+      transform: skewX(-20deg);
+      overflow: hidden
+    }
+
+    #stamFill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #38e07b, var(--lime));
+      transition: width .15s
+    }
+
+    #chargeWrap {
+      position: absolute;
+      bottom: 170px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 190px
+    }
+
+    #chargeBar {
+      height: 10px;
+      background: #0c1a2b;
+      border: 1px solid var(--lime);
+      transform: skewX(-20deg);
+      overflow: hidden
+    }
+
+    #chargeFill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--gold), #ff5d3a)
+    }
+
+    #chargeWrap .lbl {
+      font-size: 11px;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 3px;
+      font-weight: 800
+    }
+
+    #hint {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #cfe0f2;
+      background: rgba(8, 18, 32, .8);
+      border: 1px solid var(--line);
+      padding: 6px 16px;
+      border-radius: 6px;
+      transition: opacity 1s;
+      white-space: nowrap
+    }
+
+    .hudBtn {
+      pointer-events: auto;
+      cursor: pointer;
+      position: absolute;
+      top: 14px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(10, 22, 38, .85);
+      border: 1px solid var(--line);
+      color: #fff;
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .hudBtn:hover {
+      border-color: var(--lime);
+      color: var(--lime)
+    }
+
+    #btnPause {
+      right: 14px
+    }
+
+    #btnMute {
+      right: 62px
+    }
+
+    .ov {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 7, 14, .66);
+      backdrop-filter: blur(3px)
+    }
+
+    .ovCard {
+      width: min(460px, 92vw);
+      padding-bottom: 20px;
+      text-align: center
+    }
+
+    .ovCard h2 {
+      font-family: 'Lalezar';
+      font-size: 38px;
+      padding-top: 14px
+    }
+
+    .ovCol {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 14px 40px
+    }
+
+    .ovCol .pbtn {
+      width: 100%
+    }
+
+    #fullScore {
+      font-family: 'Lalezar';
+      font-size: 56px;
+      color: var(--gold);
+      line-height: 1.1
+    }
+
+    .statTbl {
+      width: 82%;
+      margin: 12px auto;
+      border-collapse: collapse;
+      font-size: 14px
+    }
+
+    .statTbl td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #14304e
+    }
+
+    .statTbl td:first-child {
+      color: var(--blue);
+      font-weight: 800
+    }
+
+    .statTbl td:last-child {
+      color: #ff7a7f;
+      font-weight: 800
+    }
+
+    .statTbl td.mid {
+      color: var(--dim);
+      font-size: 12px
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: #13293f;
+      border: 1px solid var(--lime);
+      color: #fff;
+      padding: 8px 22px;
+      border-radius: 6px;
+      font-size: 13px;
+      opacity: 0;
+      transition: .3s;
+      pointer-events: none
+    }
+
+    #toast.show {
+      opacity: 1
+    }
+
+    #errBox {
+      position: fixed;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      z-index: 70;
+      background: #2a0a10;
+      border: 2px solid #ff4148;
+      color: #ffd7d9;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 10px;
+      direction: ltr;
+      max-height: 30vh;
+      overflow: auto;
+      white-space: pre-wrap
+    }
+
+    #boot {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      font-size: 15px
+    }
+
+    #teamPanel,
+    #planPanel {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 7, 14, .78);
+      backdrop-filter: blur(8px)
+    }
+
+    .panelGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .fieldBox {
+      background: #0b1828;
+      border: 1px solid #173350;
+      border-radius: 10px;
+      padding: 10px
+    }
+
+    .fieldBox h4 {
+      margin: 0 0 7px;
+      color: var(--dim);
+      font-size: 12px
+    }
+
+    .teamSelect {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .teamChip {
+      flex: 1;
+      min-width: 140px;
+      border: 1px solid #244463;
+      background: #102239;
+      color: #fff;
+      border-radius: 10px;
+      padding: 11px;
+      text-align: center;
+      cursor: pointer
+    }
+
+    .teamChip.on {
+      border-color: var(--lime);
+      box-shadow: 0 0 0 1px var(--lime) inset;
+      background: #162c37
+    }
+
+    .teamDot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-inline-end: 6px
+    }
+
+    .planBtns {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap
+    }
+
+    .planBtn {
+      border: 1px solid #244463;
+      background: #102239;
+      color: #fff;
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer
+    }
+
+    .planBtn.on {
+      border-color: var(--lime);
+      color: var(--lime)
+    }
+
+    .smallNote {
+      font-size: 11px;
+      color: var(--dim);
+      line-height: 1.6
+    }
+
+    #leaguePanel {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(2, 7, 14, .82);
+      backdrop-filter: blur(8px)
+    }
+
+    #leagueTable th {
+      color: var(--dim);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px 5px;
+      border-bottom: 1px solid #173350
+    }
+
+    #leagueTable td {
+      text-align: center;
+      padding: 8px 5px;
+      border-bottom: 1px solid #14304e
+    }
+
+    #leagueTable td:first-child {
+      text-align: right;
+      font-weight: 800
+    }
+
+    #leagueTable tr.leagueYou {
+      background: rgba(198, 242, 78, .08)
+    }
+
+    .hudPlan {
+      right: 106px
+    }
+
+    @media (max-width:700px) {
+      #menu {
+        padding: 28px 20px;
+        gap: 26px
+      }
+
+      .mnav {
+        margin-top: 18px
+      }
+
+      .mbtn {
+        min-width: 0;
+        width: 100%;
+        font-size: 21px
+      }
+
+      .helpGrid {
+        grid-template-columns: 1fr
+      }
+
+      .helpGrid h4 {
+        grid-column: span 1
+      }
+
+      #menuFoot {
+        align-items: flex-start;
+        flex-direction: column
+      }
+
+      .tagline {
+        font-size: 13px
+      }
+    }
+
+
+    /* ===== Pre-Match / Match Room — console-style presentation ===== */
+    #preMatch {
+      position: fixed; inset: 0; z-index: 28;
+      display: flex; align-items: center; justify-content: center;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(63,145,255,.28), transparent 26%),
+        radial-gradient(circle at 50% 75%, rgba(38,75,130,.18), transparent 38%),
+        linear-gradient(180deg, #041022 0%, #071b35 44%, #020810 100%);
+      overflow: hidden;
+    }
+    #preMatch::before {
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:
+        linear-gradient(180deg, transparent 52%, rgba(0,0,0,.38) 100%),
+        repeating-linear-gradient(90deg, transparent 0, transparent 7%, rgba(255,255,255,.022) 7.2%, transparent 7.5%),
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,.08), transparent 35%);
+    }
+    #preMatch::after {
+      content:""; position:absolute; left:3%; right:3%; top:8%; bottom:8%; pointer-events:none;
+      border:1px solid rgba(133,184,255,.12); border-radius:26px;
+      box-shadow:inset 0 0 90px rgba(24,84,160,.08);
+    }
+    .pmWrap {
+      position:relative; z-index:2; width:min(1320px,96vw); height:min(760px,94vh);
+      display:grid; grid-template-rows:auto 1fr auto; gap:12px;
+    }
+    .pmTop {
+      display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px;
+      padding:2px 26px 0;
+    }
+    .pmLeague {
+      color:#f7fbff; text-align:center; font-weight:900; font-size:clamp(17px,2vw,28px);
+      letter-spacing:.02em; text-shadow:0 2px 14px rgba(0,0,0,.55); white-space:nowrap;
+    }
+    .pmSideTag {
+      color:#dbeaff; font-size:11px; font-weight:900; letter-spacing:.14em; opacity:.95;
+      text-transform:uppercase;
+    }
+    .pmSideTag.home { text-align:left; } .pmSideTag.away { text-align:right; }
+    .pmCard {
+      display:grid; grid-template-columns:minmax(280px,1fr) minmax(420px,1.25fr) minmax(280px,1fr);
+      gap:12px; align-items:stretch; min-height:0;
+    }
+    .pmTeam {
+      position:relative; display:flex; flex-direction:column; align-items:center;
+      padding:18px 14px 12px; overflow:hidden;
+      background:linear-gradient(180deg, rgba(25,53,87,.88), rgba(5,14,28,.92));
+      border:1px solid rgba(114,163,220,.34); border-radius:16px;
+      box-shadow:0 24px 60px rgba(0,0,0,.45), inset 0 0 34px rgba(74,127,201,.06);
+      isolation:isolate;
+    }
+    .pmTeam::before {
+      content:""; position:absolute; inset:auto 0 0; height:38%; z-index:-1;
+      background:linear-gradient(180deg, transparent, rgba(15,62,125,.10));
+    }
+    .pmTeam.home { border-top:4px solid #e7333b; }
+    .pmTeam.away { border-top:4px solid #2f7bff; }
+    .pmBadgeTop { width:100%; display:flex; justify-content:space-between; align-items:center; color:#bed6f2; font-size:10px; font-weight:800; }
+    .pmSideCaption { padding:4px 9px; border-radius:7px; background:rgba(3,10,20,.45); border:1px solid rgba(111,159,214,.18); }
+    .pmCrestBig {
+      width:102px; height:102px; border-radius:50%; margin:6px auto 8px;
+      display:flex; align-items:center; justify-content:center; position:relative;
+      font-family:'Lalezar'; font-size:31px; color:#fff; font-weight:900;
+      border:5px solid rgba(255,255,255,.72);
+      box-shadow:0 8px 24px rgba(0,0,0,.42), inset 0 0 20px rgba(255,255,255,.15);
+      text-shadow:0 2px 6px rgba(0,0,0,.5);
+    }
+    .pmCrestBig::after {
+      content:"★"; position:absolute; top:-13px; right:-3px; font-size:16px; color:#ffd56a;
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+    }
+    .pmCrestBig.home { background:radial-gradient(circle at 35% 30%, #ef5c62, #8e131c 62%, #43070a); }
+    .pmCrestBig.away { background:radial-gradient(circle at 35% 30%, #5e9cff, #1950a7 62%, #081b4e); }
+    .pmTeamName { font-family:'Lalezar'; font-size:clamp(25px,3vw,44px); line-height:1; margin:2px 0 4px; text-align:center; text-shadow:0 3px 10px rgba(0,0,0,.5); }
+    .pmTeamLeague { color:#bdd1e8; font-size:11px; margin-bottom:4px; }
+    .pmKit {
+      width:118px; height:154px; margin:3px auto 3px; position:relative;
+      filter:drop-shadow(0 10px 14px rgba(0,0,0,.35));
+      transform:scale(1.04);
+    }
+    .pmKit::after { content:""; position:absolute; left:10px; right:10px; bottom:3px; height:8px; border-radius:50%; background:rgba(0,0,0,.25); filter:blur(5px); }
+    .pmShirt {
+      position:absolute; left:28px; top:9px; width:62px; height:76px; border-radius:16px 16px 11px 11px;
+      box-shadow:inset 0 0 0 3px rgba(255,255,255,.13), 0 8px 16px rgba(0,0,0,.28);
+    }
+    .pmShirt::before,.pmShirt::after { content:""; position:absolute; top:4px; width:25px; height:40px; background:inherit; border-radius:13px; }
+    .pmShirt::before { left:-17px; transform:rotate(18deg); } .pmShirt::after { right:-17px; transform:rotate(-18deg); }
+    .pmShorts { position:absolute; left:31px; top:79px; width:55px; height:31px; border-radius:0 0 10px 10px; }
+    .pmSock { position:absolute; top:111px; width:16px; height:41px; border-radius:5px 5px 9px 9px; }
+    .pmSock.l { left:38px; } .pmSock.r { left:61px; }
+    .pmLineup {
+      width:100%; flex:1; min-height:0; background:rgba(7,16,31,.58);
+      border:1px solid rgba(114,149,189,.30); border-radius:10px; padding:9px 10px; margin-top:4px;
+      overflow:auto; backdrop-filter:blur(3px);
+    }
+    .pmLineupTitle { display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#b7cde7; font-weight:900; margin-bottom:7px; }
+    .pmLineupTitle::after { content:"11 PLAYERS"; color:#7e9abb; font-size:9px; letter-spacing:.09em; }
+    .pmLineupGrid { display:grid; grid-template-columns:1fr 1fr; gap:5px 7px; font-size:11px; }
+    .pmLine { display:flex; gap:6px; align-items:center; min-width:0; padding:2px 3px; border-bottom:1px solid rgba(73,102,135,.18); }
+    .pmPos { width:32px; flex:0 0 32px; padding:2px 3px; text-align:center; background:#0c1b2e; border:1px solid #294560; color:#b4ef56; border-radius:3px; font-size:9px; font-weight:900; }
+    .pmCenter {
+      background:linear-gradient(180deg, rgba(28,53,85,.93), rgba(7,15,28,.97));
+      border:1px solid rgba(102,153,215,.36); border-radius:16px; padding:14px; display:flex; flex-direction:column; min-width:0;
+      box-shadow:0 24px 60px rgba(0,0,0,.46), inset 0 0 36px rgba(54,120,207,.06);
+    }
+    .pmCenterTop { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .pmSectionTitle { font-family:'Lalezar'; font-size:26px; margin-bottom:0; }
+    .pmCenterPill { font-size:10px; color:#b9d0e8; padding:5px 8px; border:1px solid rgba(130,175,226,.24); border-radius:6px; background:rgba(7,15,26,.36); }
+    .pmScoreHero { display:flex; align-items:center; justify-content:center; gap:18px; padding:10px 0 6px; }
+    .pmMiniTeam { text-align:center; min-width:110px; }
+    .pmMiniBadge { width:48px; height:48px; margin:0 auto 4px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Lalezar'; font-weight:900; border:2px solid rgba(255,255,255,.72); box-shadow:0 4px 12px rgba(0,0,0,.3); }
+    .pmMiniBadge.red { background:linear-gradient(145deg,#ef4b53,#86121b); } .pmMiniBadge.blue { background:linear-gradient(145deg,#5b9bff,#1d52a3); }
+    .pmMiniName { font-size:11px; color:#d6e7f8; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pmVs { display:flex; align-items:center; justify-content:center; font-family:'Lalezar'; font-size:36px; color:#ffd05a; padding:10px 2px 8px; }
+    .pmInfoGrid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .pmAction {
+      cursor:pointer; color:#fff; background:linear-gradient(180deg,#122a46,#0d2037); border:1px solid #2d4d6d;
+      padding:11px 11px; border-radius:8px; font-family:'Vazirmatn'; font-weight:800; transition:.15s; text-align:right;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    .pmAction:hover,.pmAction.gpFocus { background:linear-gradient(90deg,#2178dc,#17375e); border-color:var(--lime); transform:translateY(-1px); }
+    .pmAction small { display:block; color:#8fa9c5; font-weight:400; margin-top:3px; }
+    .pmCenterNote { margin-top:auto; padding:10px 4px 0; color:#8fa8c2; font-size:11px; line-height:1.75; text-align:center; }
+    .pmBottom {
+      display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center; padding:3px 16px 0;
+    }
+    .pmPrompt { color:#d6e6f6; font-size:11px; opacity:.95; }
+    .pmPrompt.right { text-align:right; }
+    .pmPrompt b { color:#fff; }
+    .pmKick {
+      cursor:pointer; border:none; min-width:300px; font-family:'Lalezar'; font-size:29px; letter-spacing:.01em;
+      padding:12px 42px; color:#08121f; background:linear-gradient(180deg,#6bb8ff,#2382e5 58%,#1763bd);
+      box-shadow:0 10px 28px rgba(27,119,224,.34), inset 0 1px 0 rgba(255,255,255,.65);
+      border:1px solid #9ccfff; border-bottom:4px solid #bce0ff; border-radius:8px; transition:.16s;
+    }
+    .pmKick:hover,.pmKick.gpFocus { filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 13px 30px rgba(27,119,224,.43), 0 0 0 2px rgba(198,242,78,.18); }
+    @media (max-width:900px) {
+      .pmWrap { height:auto; max-height:95vh; overflow:auto; }
+      .pmCard { grid-template-columns:1fr; }
+      .pmCenter { order:3; } .pmTeam.home { order:1; } .pmTeam.away { order:2; }
+      .pmTop { grid-template-columns:1fr; gap:4px; padding-inline:4px; }
+      .pmSideTag.home,.pmSideTag.away { text-align:center; }
+      .pmBottom { grid-template-columns:1fr; padding-inline:4px; }
+      .pmKick { margin:auto; width:min(100%,360px); min-width:0; }
+      .pmPrompt,.pmPrompt.right { text-align:center; }
+    }
+    .mobileModeInfo .modeInfoText{flex:1;min-height:38px;display:flex;align-items:center;justify-content:center;padding:8px 12px;border:1px solid rgba(150,185,220,.18);border-radius:8px;background:rgba(7,17,29,.45);color:#b9c9d9;font-size:12px;text-align:center;}
+    .gpFocus {
+      outline: 3px solid var(--lime) !important;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 4px rgba(198, 242, 78, .12)
+    }
+
+
+    /* ===== Mobile Touch Controller ===== */
+    #touchPad { display:none; position:fixed; inset:0; z-index:99999; pointer-events:none; touch-action:none; }
+    body.touchDevice #touchPad { display:block; }
+    .touchJoy { position:absolute; left:24px; bottom:24px; width:156px; height:156px; border-radius:50%; pointer-events:auto; touch-action:none; user-select:none; -webkit-user-select:none; }
+    .touchJoyBase { position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 50% 45%,rgba(80,125,180,.34),rgba(5,15,27,.84)); border:2px solid rgba(220,238,255,.30); box-shadow:inset 0 0 30px rgba(88,145,211,.20),0 10px 28px rgba(0,0,0,.38); }
+    .touchJoyRing { position:absolute; inset:18px; border:1px solid rgba(210,230,250,.22); border-radius:50%; }
+    .touchJoyKnob { position:absolute; width:62px; height:62px; left:47px; top:47px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#b7dcff,#2d86d8 62%,#164d88); border:2px solid rgba(255,255,255,.56); box-shadow:0 8px 20px rgba(0,0,0,.40),inset 0 0 16px rgba(255,255,255,.14); transform:translate(0,0); pointer-events:none; }
+    .touchActions { position:absolute; right:18px; bottom:18px; width:190px; height:190px; pointer-events:none; }
+    .touchBtn { position:absolute; width:62px; height:62px; border-radius:50%; pointer-events:auto; touch-action:none; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; color:#fff; font-family:'Lalezar'; font-size:22px; font-weight:900; border:2px solid rgba(255,255,255,.38); box-shadow:0 8px 18px rgba(0,0,0,.35),inset 0 0 14px rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; }
+    .touchBtn:active,.touchBtn.on { transform:scale(.92); filter:brightness(1.18); }
+    /* Standard Xbox-style diamond: Y top / X left / B right / A bottom */
+    .touchY { left:64px; top:0; background:radial-gradient(circle at 35% 30%,#e9d178,#a47719); }
+    .touchX { left:0; top:64px; background:radial-gradient(circle at 35% 30%,#9db5ff,#385ac0); }
+    .touchB { right:0; top:64px; background:radial-gradient(circle at 35% 30%,#ec737a,#8e1f27); }
+    .touchA { left:64px; bottom:0; background:radial-gradient(circle at 35% 30%,#72d895,#19834a); }
+    .touchSwitch { position:absolute; right:226px; bottom:110px; width:58px; height:58px; border-radius:50%; pointer-events:auto; touch-action:none; background:rgba(12,28,48,.92); border:2px solid rgba(198,242,78,.46); color:var(--lime); font-family:'Lalezar'; font-size:18px; box-shadow:0 8px 18px rgba(0,0,0,.34); }
+    .touchSprint { position:absolute; right:226px; bottom:40px; width:58px; height:58px; border-radius:50%; pointer-events:auto; touch-action:none; background:rgba(12,28,48,.92); border:2px solid rgba(255,201,74,.42); color:var(--gold); font-family:'Lalezar'; font-size:16px; box-shadow:0 8px 18px rgba(0,0,0,.34); }
+    .touchLT { position:absolute; right:294px; bottom:40px; width:58px; height:58px; border-radius:50%; pointer-events:auto; touch-action:none; background:rgba(12,28,48,.92); border:2px solid rgba(128,190,255,.42); color:#8ecbff; font-family:'Lalezar'; font-size:16px; box-shadow:0 8px 18px rgba(0,0,0,.34); }
+    #touchHelp { position:absolute; left:50%; top:12px; bottom:auto; transform:translateX(-50%); padding:6px 11px; border-radius:8px; font-size:10px; color:#d8e8f7; background:rgba(5,13,24,.72); border:1px solid rgba(132,166,203,.18); opacity:.84; pointer-events:none; text-align:center; white-space:nowrap; }
+    @media (orientation:landscape) and (max-height:560px){ .touchJoy{left:14px;bottom:14px;transform:scale(.82);transform-origin:bottom left}.touchActions{right:8px;bottom:8px;transform:scale(.82);transform-origin:bottom right}.touchSwitch{right:180px;bottom:82px;transform:scale(.82)}.touchSprint{right:181px;bottom:22px;transform:scale(.82)}#touchHelp{top:8px;font-size:9px} }
+    @media (max-width:420px){ .touchJoy{left:14px;bottom:14px;width:140px;height:140px}.touchJoyKnob{width:56px;height:56px;left:42px;top:42px}.touchActions{right:10px;bottom:10px;width:176px;height:176px}.touchBtn{width:56px;height:56px}.touchY{left:60px}.touchX{top:60px}.touchB{top:60px}.touchA{left:60px}.touchSwitch{right:194px;bottom:92px;width:52px;height:52px}.touchSprint{right:194px;bottom:28px;width:52px;height:52px}.touchLT{right:254px;bottom:28px;width:52px;height:52px}#touchHelp{max-width:92vw;white-space:normal;line-height:1.25} }
+
+
+    /* ===== Gameplay 2.0 / FC-style presentation ===== */
+    #advHUD { position:absolute; left:16px; right:16px; bottom:16px; display:flex; justify-content:space-between; align-items:flex-end; gap:14px; pointer-events:none; }
+    .advCard { min-width:240px; background:linear-gradient(180deg,rgba(7,17,29,.94),rgba(6,13,24,.82)); border:1px solid rgba(150,185,220,.26); box-shadow:0 14px 40px rgba(0,0,0,.36); border-radius:10px; backdrop-filter:blur(7px); padding:10px 12px; }
+    .advCard .top { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    .advCard .title { font-family:'Lalezar'; font-size:18px; }
+    .advCard .sub { color:#8fa5bd; font-size:10px; }
+    .advBars { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
+    .advStat span { display:block; color:#9bb1c7; font-size:9px; margin-bottom:2px; }
+    .advStat i { display:block; height:5px; background:#15283b; border-radius:4px; overflow:hidden; }
+    .advStat i b { display:block; height:100%; width:50%; background:linear-gradient(90deg,#2f7bff,#c6f24e); }
+    #advToast { position:absolute; left:50%; bottom:112px; transform:translateX(-50%) scale(.9); opacity:0; transition:.18s; background:rgba(8,18,32,.92); border:1px solid var(--lime); color:#fff; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; box-shadow:0 10px 26px rgba(0,0,0,.35); }
+    #advToast.show { opacity:1; transform:translateX(-50%) scale(1); }
+    .advSettings { margin:0 22px 10px; }
+    .advSettingsRow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .advSettingsRow label { width:120px; color:var(--dim); font-size:13px; }
+    .advChoice { cursor:pointer; border:1px solid #244463; background:#102239; color:#fff; border-radius:8px; padding:8px 12px; font-weight:700; font-family:'Vazirmatn'; }
+    .advChoice.on { color:#091402; background:var(--lime); border-color:var(--lime); }
+    @media (max-width:900px){ #advHUD{flex-direction:column;align-items:stretch;bottom:8px;} .advCard{min-width:0;width:100%;} }
+
+  </style>
+</head>
+
+<body tabindex="0">
+  <div id="stage"></div>
+  <div id="vignette"></div>
+  <div id="menu">
+    <div>
+      <div class="kicker">شبیه‌ساز حرفه‌ای · فصل ۱</div>
+      <h1 id="gameTitle" class="display">میدان <em>بزرگ</em></h1>
+      <div class="tagline">فوتبال سه‌بعدی با هوش مصنوعی ۲۲ نفره، فیزیک واقعی توپ و جوّ زنده‌ی استادیوم</div>
+      <div class="mnav">
+        <button class="mbtn" id="btnPlay"><span>شروع سریع ⚽<small>پرسپولیس × استقلال</small></span></button>
+        <button class="mbtn" id="btnLeague"><span>حالت لیگ 🏆<small>فصل ۴ تیمی · جدول · امتیاز · بازی‌های متوالی</small></span></button>
+      </div>
+    </div>
+    <div id="menuFoot">
+      <div id="vsCard">
+        <div class="crest c0" id="homeCrest">PER</div>
+        <div id="homeTeamName">پرسپولیس</div>
+        <div class="display" style="font-size:22px;color:var(--gold)">VS</div>
+        <div id="awayTeamName">استقلال</div>
+        <div class="crest c1" id="awayCrest">EST</div>
+      </div>
+      <div id="ctrlHint"></div>
+      <div>نسخه‌ی ۰٫۹ · تیم‌های واقعی فصل ۲۰۲۶/۲۷</div>
+    </div>
+  </div>
+
+  <div id="preMatch" class="hidden">
+    <div class="pmWrap">
+      <div class="pmTop">
+        <div class="pmSideTag home">HOME · 01</div>
+        <div class="pmLeague" id="pmLeagueName">MATCH ROOM · PRE-MATCH</div>
+        <div class="pmSideTag away">02 · AWAY</div>
+      </div>
+
+      <div class="pmCard">
+        <section class="pmTeam home">
+          <div class="pmBadgeTop"><span class="pmSideCaption">HOME</span><span id="pmHomeFormTag">4-3-3</span></div>
+          <div class="pmCrestBig home" id="pmHomeCrest">PER</div>
+          <div class="pmTeamName" id="pmHomeName">پرسپولیس</div>
+          <div class="pmTeamLeague" id="pmHomeLeague">IRAN · PRO LEAGUE</div>
+          <div class="pmKit" aria-hidden="true">
+            <div class="pmShirt" id="pmHomeShirt"></div>
+            <div class="pmShorts" id="pmHomeShorts"></div>
+            <div class="pmSock l" id="pmHomeSock"></div>
+            <div class="pmSock r" id="pmHomeSock2"></div>
+          </div>
+          <div class="pmLineup">
+            <div class="pmLineupTitle">STARTING LINEUP</div>
+            <div class="pmLineupGrid" id="pmHomeLineup"></div>
+          </div>
+        </section>
+
+        <section class="pmCenter">
+          <div class="pmCenterTop"><div class="pmSectionTitle">Match Room</div><div class="pmCenterPill">LIVE SETUP</div></div>
+          <div class="pmScoreHero">
+            <div class="pmMiniTeam"><div class="pmMiniBadge red" id="pmMiniHome">PER</div><div class="pmMiniName" id="pmMiniHomeName">پرسپولیس</div></div>
+            <div class="pmVs">VS</div>
+            <div class="pmMiniTeam"><div class="pmMiniBadge blue" id="pmMiniAway">EST</div><div class="pmMiniName" id="pmMiniAwayName">استقلال</div></div>
+          </div>
+          <div class="pmInfoGrid">
+            <button class="pmAction" id="pmGamePlanBtn">⚙ Game Plan<small>آرایش، ذهنیت و پرس تیم</small></button>
+            <button class="pmAction" id="pmSettingsBtn">🎛 Match Settings<small>مدت، سختی، دوربین، حالت بازی و تاچ</small></button>
+            <button class="pmAction" id="pmTeamsBtn">👕 Teams & Kits<small>انتخاب تیم‌ها؛ لباس‌ها بعداً قابل شخصی‌سازی‌اند</small></button>
+            <button class="pmAction" id="pmControlsBtn">🎮 Controls<small>دسته، LT/L2 و کیبورد</small></button>
+          </div>
+          <div class="pmCenterNote">
+            قبل از هر مسابقه این صفحه نمایش داده می‌شود؛ درست مثل یک Match Room.
+            ابتدا ترکیب و تنظیمات را بررسی کن و سپس <b style="color:var(--lime)">KICK-OFF</b> را بزن.<br>ترکیب‌های پیش‌فرض با آخرین داده‌های در دسترس تا ۲ سپتامبر ۲۰۲۶ به‌روزرسانی شده‌اند.
+          </div>
+        </section>
+
+        <section class="pmTeam away">
+          <div class="pmBadgeTop"><span id="pmAwayFormTag">4-3-3</span><span class="pmSideCaption">AWAY</span></div>
+          <div class="pmCrestBig away" id="pmAwayCrest">EST</div>
+          <div class="pmTeamName" id="pmAwayName">استقلال</div>
+          <div class="pmTeamLeague" id="pmAwayLeague">IRAN · PRO LEAGUE</div>
+          <div class="pmKit" aria-hidden="true">
+            <div class="pmShirt" id="pmAwayShirt"></div>
+            <div class="pmShorts" id="pmAwayShorts"></div>
+            <div class="pmSock l" id="pmAwaySock"></div>
+            <div class="pmSock r" id="pmAwaySock2"></div>
+          </div>
+          <div class="pmLineup">
+            <div class="pmLineupTitle">STARTING LINEUP</div>
+            <div class="pmLineupGrid" id="pmAwayLineup"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="pmBottom">
+        <div class="pmPrompt">◀/▶ انتخاب گزینه · A تأیید · B بازگشت</div>
+        <button class="pmKick" id="pmKickoff">KICK-OFF ⚽</button>
+        <div class="pmPrompt right">LT / L2 → کنترل دروازه‌بان</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="teamPanel" class="hidden">
+    <div class="panel" style="max-width:780px;width:min(92vw,780px)">
+      <h3>انتخاب تیم‌ها</h3>
+      <div class="panelGrid">
+        <div class="fieldBox">
+          <h4>تیم شما</h4>
+          <div class="teamSelect" id="homeTeams"></div>
+        </div>
+        <div class="fieldBox">
+          <h4>تیم حریف</h4>
+          <div class="teamSelect" id="awayTeams"></div>
+        </div>
+      </div>
+      <div class="smallNote" style="margin-top:10px">هر مسابقه با ۱۱ بازیکن کامل اجرا می‌شود.</div>
+      <div class="pbtnRow"><button class="pbtn" id="teamClose">تأیید و بستن</button></div>
+    </div>
+  </div>
+  <div id="leaguePanel" class="hidden">
+    <div class="panel" style="max-width:860px;width:min(94vw,860px);max-height:88vh;overflow:auto;padding-bottom:20px">
+      <h3>🏆 لیگ فصل</h3>
+      <div class="panelGrid" style="padding:12px 22px 0">
+        <div class="fieldBox">
+          <h4>تیم شما</h4>
+          <div class="teamSelect" id="leagueTeams"></div>
+          <div class="smallNote" style="margin-top:8px">یک تیم را انتخاب کنید و سه مسابقه رسمی فصل را بازی کنید.</div>
+        </div>
+        <div class="fieldBox">
+          <h4>بازی بعدی</h4>
+          <div id="leagueNext" style="font-family:'Lalezar';font-size:24px;color:var(--gold);padding:8px 0">هنوز لیگ شروع نشده</div>
+          <div id="leagueRound" class="smallNote"></div>
+        </div>
+      </div>
+      <div class="fieldBox" style="margin:12px 22px 0">
+        <h4>جدول لیگ</h4>
+        <table class="statTbl" id="leagueTable" style="width:100%;margin:4px 0"></table>
+      </div>
+      <div class="pbtnRow">
+        <button class="pbtn" id="leagueStart">شروع لیگ</button>
+        <button class="pbtn alt" id="leagueClose">بازگشت</button>
+      </div>
+    </div>
+  </div>
+  <div id="planPanel" class="hidden">
+    <div class="panel" style="max-width:780px;width:min(92vw,780px)">
+      <h3>Game Plan</h3>
+      <div class="fieldBox">
+        <h4>برای کدام تیم؟</h4>
+        <div class="planBtns" id="planSide"></div>
+      </div>
+      <div class="panelGrid" style="margin-top:10px">
+        <div class="fieldBox">
+          <h4>آرایش</h4>
+          <div class="planBtns" id="planFormation"></div>
+        </div>
+        <div class="fieldBox">
+          <h4>ذهنیت</h4>
+          <div class="planBtns" id="planMentality"></div>
+        </div>
+      </div>
+      <div class="fieldBox" style="margin-top:10px">
+        <h4>فشار دفاعی</h4>
+        <div class="planBtns" id="planPress"></div>
+      </div>
+      <div class="smallNote" style="margin-top:10px">Game Plan روی تصمیم‌گیری و استقرار بازیکنان اثر می‌گذارد.</div>
+      <div class="pbtnRow"><button class="pbtn" id="planClose">تأیید و بستن</button></div>
+    </div>
+  </div>
+  <div id="settingsPanel" class="hidden">
+    <div id="settingsCard" class="panel">
+      <h3>تنظیمات مسابقه</h3>
+      <div class="segRow"><label>حالت بازی</label>
+        <div class="seg" id="gGameMode"></div>
+      </div>
+      <div class="segRow"><label>مدت مسابقه</label>
+        <div class="seg" id="gDur"></div>
+      </div>
+      <div class="segRow"><label>سختی حریف</label>
+        <div class="seg" id="gDiff"></div>
+      </div>
+      <div class="segRow"><label>دوربین</label>
+        <div class="seg" id="gCam"></div>
+      </div>
+      <div class="segRow"><label>کنترلر تاچ</label>
+        <div class="seg" id="gTouch"></div>
+      </div>
+      <div class="smallNote" style="margin-top:8px">خودکار: ۱ دسته + تاچ = دونفره؛ ۲ دسته = دونفره با دو دسته. تک‌نفره حتی با چند دسته هم حریف را AI نگه می‌دارد. برای بازی ۲ نفره فقط با دو دسته، تاچ را خاموش کن.</div>
+
+      <div class="advSettings fieldBox">
+        <h4>🎮 Gameplay 2.0</h4>
+        <div class="advSettingsRow"><label>سبک بازی</label><div id="advPresetBtns"></div></div>
+        <div class="advSettingsRow" style="margin-top:8px"><label>آب‌وهوا</label><div id="advWeatherBtns"></div></div>
+        <div class="smallNote" style="margin-top:8px">Authentic برای فوتبال واقع‌گرایانه‌تر؛ Competitive برای کنترل سریع‌تر و پاسخ‌گویی تهاجمی‌تر.</div>
+      </div>
+      <div class="pbtnRow"><button class="pbtn" id="setClose">تأیید و بستن</button></div>
+    </div>
+  </div>
+  <div id="helpPanel" class="hidden">
+    <div id="helpCard" class="panel">
+      <h3>راهنمای کنترل‌ها</h3>
+      <div class="helpGrid">
+        <h4>⌨ کیبورد</h4>
+        <div class="hrow"><span>حرکت</span><span><kbd>W A S D</kbd> / جهت‌ها</span></div>
+        <div class="hrow"><span>اسپرینت</span><span><kbd>Shift</kbd></span></div>
+        <div class="hrow"><span>پاس</span><span><kbd>X</kbd> یا <kbd>Space</kbd></span></div>
+        <div class="hrow"><span>پاس بلند (نگه‌دار = قدرت)</span><span><kbd>Y</kbd></span></div>
+        <div class="hrow"><span>شوت (نگه‌دار = قدرت)</span><span><kbd>C</kbd></span></div>
+        <div class="hrow"><span>تکل اسلاید (کیبورد)</span><span><kbd>V</kbd></span></div>
+        <div class="hrow"><span>سوییچ بازیکن</span><span><kbd>Q</kbd></span></div>
+        <div class="hrow"><span>توقف</span><span><kbd>P</kbd> / <kbd>Esc</kbd></span></div>
+        <h4>🎮 دسته</h4>
+        <div class="hrow"><span>حرکت</span><span>استیک چپ</span></div>
+        <div class="hrow"><span>اسپرینت</span><span>RB / R1</span></div><div class="hrow"><span>حرکت تکنیکی</span><span>Right Stick / استیک راست</span></div>
+        <div class="hrow"><span>پاس</span><span>A</span></div>
+        <div class="hrow"><span>تکل</span><span>B</span></div>
+        <div class="hrow"><span>پاس بلند</span><span>Y</span></div>
+        <div class="hrow"><span>شوت</span><span>X</span></div>
+        <div class="hrow"><span>سوییچ</span><span>LB / L1</span></div>
+        <div class="hrow"><span>انتخاب در منو</span><span>Y</span></div>
+        <div class="hrow"><span>بازگشت در منو</span><span>B</span></div>
+        <div class="hrow"><span>توقف</span><span>Start</span></div>
+      </div>
+      <div class="pbtnRow"><button class="pbtn" id="helpClose">بستن</button></div>
+    </div>
+  </div>
+  <div id="hud" class="hidden">
+    <div id="sb">
+      <div class="sbTeam h" id="sbHomeName">PER</div>
+      <div class="sbMid">
+        <div id="score"><span id="scH">0</span> - <span id="scA">0</span></div>
+        <div id="clock">00'</div>
+        <div id="halfTag">نیمه ۱</div>
+      </div>
+      <div class="sbTeam a" id="sbAwayName">EST</div>
+    </div>
+    <div id="comm"></div>
+    <div id="banner">
+      <div id="bMain" class="display"></div>
+      <div id="bSub"></div>
+    </div>
+    <canvas id="radar" width="220" height="136"></canvas>
+    <div id="stam">
+      <div class="lbl">استقامت</div>
+      <div id="stamBar">
+        <div id="stamFill"></div>
+      </div>
+    </div>
+
+    <div id="advHUD">
+      <div class="advCard" id="advPlayerCard">
+        <div class="top"><div><div class="sub">CONTROLLED PLAYER</div><div class="title" id="advPlayerName">—</div></div><div id="advPlayerRole" class="sub">—</div></div>
+        <div class="advBars">
+          <div class="advStat"><span>PAC</span><i><b id="advPac"></b></i></div>
+          <div class="advStat"><span>DRI</span><i><b id="advDri"></b></i></div>
+          <div class="advStat"><span>PAS</span><i><b id="advPas"></b></i></div>
+          <div class="advStat"><span>PHY</span><i><b id="advPhy"></b></i></div>
+        </div>
+      </div>
+    </div>
+    <div id="advToast"></div>
+
+    <div id="chargeWrap" class="hidden">
+      <div class="lbl" id="chargeLabel">قدرت شوت</div>
+      <div id="chargeBar">
+        <div id="chargeFill"></div>
+      </div>
+    </div>
+    <div id="hint"></div>
+    <button class="hudBtn hudPlan" id="btnHudPlan">⚙</button><button class="hudBtn" id="btnMute">🔊</button><button
+      class="hudBtn" id="btnPause">⏸</button>
+  </div>
+  <div id="pauseOv" class="ov hidden">
+    <div class="panel ovCard">
+      <h2>مسابقه متوقف شد</h2>
+      <div class="ovCol"><button class="pbtn" id="pResume">ادامه‌ی بازی</button><button class="pbtn alt"
+          id="pRestart">شروع دوباره</button><button class="pbtn alt" id="pMenu">منوی اصلی</button></div>
+    </div>
+  </div>
+  <div id="fullOv" class="ov hidden">
+    <div class="panel ovCard">
+      <h2>پایان مسابقه</h2>
+      <div id="fullScore">0 - 0</div>
+      <table class="statTbl" id="statTbl"></table>
+      <div class="ovCol"><button class="pbtn" id="fRematch">بازی دوباره</button><button class="pbtn alt" id="fMenu">منوی
+          اصلی</button></div>
+    </div>
+  </div>
+
+  <div id="touchPad" aria-hidden="true">
+    <div class="touchJoy" id="touchJoy">
+      <div class="touchJoyBase"></div><div class="touchJoyRing"></div><div class="touchJoyKnob" id="touchJoyKnob"></div>
+    </div>
+    <div class="touchActions">
+      <button class="touchBtn touchY" id="touchY" type="button">Y</button>
+      <button class="touchBtn touchX" id="touchX" type="button">X</button>
+      <button class="touchBtn touchA" id="touchA" type="button">A</button>
+      <button class="touchBtn touchB" id="touchB" type="button">B</button>
+    </div>
+    <button class="touchSwitch" id="touchSwitch" type="button">LB</button>
+    <button class="touchSprint" id="touchSprint" type="button">RB</button>
+    <button class="touchLT" id="touchLT" type="button">LT</button>
+    <div id="touchHelp">استیک: حرکت · A پاس · B تکل · X شوت · Y پاس بلند · LB سوییچ · LT دروازه‌بان · RB سرعت</div>
+  </div>
+  <div id="toast"></div>
+  <div id="errBox" class="hidden"></div>
+  <div id="boot">در حال بارگذاری موتور سه‌بعدی…</div>
+  <script>
+    window.__threeReady = new Promise(function (resolve, reject) {
+      var urls = [
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        'https://unpkg.com/three@0.128.0/build/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'
+      ];
+      var i = 0;
+      function load() {
+        if (window.THREE) { resolve(window.THREE); return; }
+        if (i >= urls.length) { reject(new Error('THREE missing')); return; }
+        var sc = document.createElement('script'); sc.src = urls[i++]; sc.async = false;
+        sc.onload = function () { window.THREE ? resolve(window.THREE) : load(); };
+        sc.onerror = load;
+        document.head.appendChild(sc);
+      }
+      load();
+    });
+  </script>
+  <script>
+    window.__threeReady.then(function () {
+      "use strict";
+      if (!window.THREE) { document.getElementById('boot').textContent = 'خطا: Three.js بارگذاری نشد.'; return; }
+      var errShown = false;
+      function reportErr(e) { if (errShown) return; errShown = true; var el = document.getElementById('errBox'); el.classList.remove('hidden'); el.textContent = '⚠ RUNTIME ERROR:\n' + ((e && e.stack) || e || 'unknown'); console.error(e); }
+      window.addEventListener('error', function (ev) { reportErr(ev.error || ev.message); });
+      window.addEventListener('unhandledrejection', function (ev) { reportErr(ev.reason); });
+      function $(id) { return document.getElementById(id); }
+      function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function rnd(a, b) { if (b === undefined) return Math.random() * a; return a + Math.random() * (b - a); }
+      function d2(a, b) { return Math.hypot(a.x - b.x, a.z - b.z); }
+      function angLerp(a, b, t) { var d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return a + d * Math.min(1, t); }
+      function angDiff(a, b) { var d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; }
+      var TEAMS = [
+        { name: 'پرسپولیس', short: 'PER', jersey: 0xe21b23, shorts: 0xe21b23, sock: 0xffffff, gk: 0x111827, power: 1.03, kitStyle: 'perspolis' },
+        { name: 'استقلال', short: 'EST', jersey: 0x0b4ea2, shorts: 0x082f6b, sock: 0xffffff, gk: 0x16a34a, power: 1.03, kitStyle: 'esteghlal' },
+        { name: 'بارسلونا', short: 'BAR', jersey: 0x7a1731, shorts: 0x081b3a, sock: 0x081b3a, gk: 0xf5c542, power: 1.08, kitStyle: 'barca' },
+        { name: 'رئال مادرید', short: 'RMA', jersey: 0xf4f4f2, shorts: 0xf4f4f2, sock: 0xf4f4f2, gk: 0x00a6a6, power: 1.08, kitStyle: 'realmadrid' }
+      ];
+      var NAMES = [
+        ['پیام نیازمند', 'حسین ابرقویی', 'محمدحسین کنعانی‌زادگان', 'مجید عیدی', 'مهدی تیکدری', 'پوریا پورعلی', 'محمد خدابنده‌لو', 'تیوی بیفوما', 'محمدمهدی محبی', 'علی علیپور', 'ایگور سرگیف'],
+        ['حبیب فرعباسی', 'سامان فلاح', 'رستم آشورماتوف', 'عارف آقاسی', 'صالح حردانی', 'حسین گودرزی', 'امیرمحمد رزاقی‌نیا', 'یاسر آسانی', 'علیرضا کوشکی', 'اسماعیل قلی‌زاده', 'سعید سحرخیزان'],
+        ['Joan Garcia', 'Andreas Christensen', 'Jules Koundé', 'Xavi Espart', 'Pau Cubarsí', 'Dani Olmo', 'Anthony Gordon', 'Marc Bernal', 'Pedri', 'Lamine Yamal', 'Raphinha'],
+        ['Thibaut Courtois', 'Trent Alexander-Arnold', 'Antonio Rüdiger', 'Dean Huijsen', 'Marc Cucurella', 'Eduardo Camavinga', 'Federico Valverde', 'Jude Bellingham', 'Brahim Díaz', 'Vinícius Jr.', 'Kylian Mbappé']
+      ];
+      var FORMATIONS = {
+        '4-3-3': [
+          { r: 'GK', x: -.96, z: 0 }, { r: 'DF', x: -.72, z: -.58 }, { r: 'DF', x: -.79, z: -.20 }, { r: 'DF', x: -.79, z: .20 }, { r: 'DF', x: -.72, z: .58 },
+          { r: 'MF', x: -.44, z: -.30 }, { r: 'MF', x: -.50, z: 0 }, { r: 'MF', x: -.44, z: .30 },
+          { r: 'FW', x: -.12, z: -.52 }, { r: 'FW', x: -.16, z: 0 }, { r: 'FW', x: -.12, z: .52 }],
+        '4-4-2': [
+          { r: 'GK', x: -.96, z: 0 }, { r: 'DF', x: -.72, z: -.58 }, { r: 'DF', x: -.79, z: -.20 }, { r: 'DF', x: -.79, z: .20 }, { r: 'DF', x: -.72, z: .58 },
+          { r: 'MF', x: -.45, z: -.53 }, { r: 'MF', x: -.48, z: -.18 }, { r: 'MF', x: -.48, z: .18 }, { r: 'MF', x: -.45, z: .53 },
+          { r: 'FW', x: -.14, z: -.23 }, { r: 'FW', x: -.14, z: .23 }],
+        '5-3-2': [
+          { r: 'GK', x: -.96, z: 0 }, { r: 'DF', x: -.74, z: -.70 }, { r: 'DF', x: -.82, z: -.35 }, { r: 'DF', x: -.84, z: 0 }, { r: 'DF', x: -.82, z: .35 }, { r: 'DF', x: -.74, z: .70 },
+          { r: 'MF', x: -.45, z: -.34 }, { r: 'MF', x: -.50, z: 0 }, { r: 'MF', x: -.45, z: .34 }, { r: 'FW', x: -.15, z: -.23 }, { r: 'FW', x: -.15, z: .23 }]
+      };
+      var PLAN_PRESETS = [
+        { key: 'balanced', label: 'متعادل', speed: 1, pass: 1, forward: 1, press: 1, def: 1, shape: 1 },
+        { key: 'attack', label: 'هجومی', speed: 1.03, pass: 1.02, forward: 1.24, press: 1.05, def: .88, shape: 1.06 },
+        { key: 'defend', label: 'دفاعی', speed: .98, pass: 1.01, forward: .72, press: .90, def: 1.18, shape: .92 }
+      ];
+      var selected = { home: 0, away: 1 };
+      var PLANS = [
+        { formation: '4-3-3', mentality: 'balanced', press: 'balanced' },
+        { formation: '4-3-3', mentality: 'balanced', press: 'balanced' }
+      ];
+      var PRESS = {
+        low: { label: 'کم', value: .72 }, balanced: { label: 'متعادل', value: 1 }, high: { label: 'زیاد', value: 1.25 }
+      };
+      var DIFFS = [
+        { name: 'تازه‌کار', speed: .96, shotErr: 3.0, passErr: 2.2, tackle: .60, decide: .38, save: .42 },
+        { name: 'حرفه‌ای', speed: 1.08, shotErr: 1.5, passErr: 1.0, tackle: .82, decide: .18, save: .50 },
+        { name: 'افسانه‌ای', speed: 1.18, shotErr: .85, passErr: .55, tackle: .95, decide: .08, save: .58 }];
+      var S = {
+        mode: 'menu', paused: false, freeze: 0, pending: null, phase: 'idle', clock: 0, elapsed: 0, half: 1,
+        score: [0, 0], shots: [0, 0], poss: [0, 0], fouls: [0, 0], cards: [0, 0], saves: [0, 0],
+        possession: null, lastTouchTeam: 0, lastTouchPlayer: null, controlled: [null, null], switchCd: [0, 0], manualSwitch: [0, 0],
+        local2P: false, inPreMatch: false, chargeState: [{ charging: false, amount: 0, mode: 'shot' }, { charging: false, amount: 0, mode: 'shot' }],
+        slowmo: 0, attackDir: [1, -1], settings: { duration: 6, difficulty: 1, camera: 0, mode: 'single', touchEnabled: true, gameMode: 'auto' }, matchTeams: [0, 1]
+      };
+
+      var LEAGUE_ROUNDS = [
+        [[0, 1], [2, 3]],
+        [[0, 2], [1, 3]],
+        [[0, 3], [1, 2]]
+      ];
+      var league = {
+        active: false, done: false, club: 0, round: 0, table: [], results: [], currentFixture: null, pendingNext: false
+      };
+      function makeLeagueTable() {
+        var rows = [];
+        for (var i = 0; i < TEAMS.length; i++) rows.push({ team: i, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 });
+        return rows;
+      }
+      league.table = makeLeagueTable();
+      try { var savedSettings = JSON.parse(localStorage.getItem('gm_settings') || '{}'); for (var sk in savedSettings) S.settings[sk] = savedSettings[sk]; } catch (e) { }
+      S.settings.mode = 'single';
+      S.settings.duration = +S.settings.duration || 6;
+      S.settings.difficulty = clamp(S.settings.difficulty | 0, 0, 2);
+      S.settings.camera = clamp(S.settings.camera | 0, 0, 2);
+      S.settings.touchEnabled = S.settings.touchEnabled !== false;
+      S.settings.gameMode = ['auto','single','two'].indexOf(S.settings.gameMode) >= 0 ? S.settings.gameMode : 'auto';
+      S.settings.mode = 'single';
+      function saveSettings() { try { localStorage.setItem('gm_settings', JSON.stringify(S.settings)); } catch (e) { } }
+      function diffFor(t) { return t === 1 ? DIFFS[S.settings.difficulty] : DIFFS[1]; }
+      var SND = {
+        ctx: null, master: null, crowdG: null, excite: 0, muted: false, noise: null,
+        init: function () {
+          if (this.ctx) return; try {
+            var C = new (window.AudioContext || window.webkitAudioContext)(); this.ctx = C;
+            this.master = C.createGain(); this.master.gain.value = .85; this.master.connect(C.destination);
+            var len = C.sampleRate * 2, buf = C.createBuffer(1, len, C.sampleRate), d = buf.getChannelData(0);
+            for (var i = 0; i < len; i++)d[i] = Math.random() * 2 - 1; this.noise = buf;
+            var src = C.createBufferSource(); src.buffer = buf; src.loop = true;
+            var bp = C.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 650; bp.Q.value = .55;
+            this.crowdG = C.createGain(); this.crowdG.gain.value = .05;
+            src.connect(bp); bp.connect(this.crowdG); this.crowdG.connect(this.master); src.start();
+          } catch (e) { }
+        },
+        burst: function (dur, freq, gain) {
+          if (!this.ctx || !this.noise) return; var C = this.ctx, s = C.createBufferSource(), g = C.createGain(), f = C.createBiquadFilter();
+          s.buffer = this.noise; f.type = 'lowpass'; f.frequency.value = freq; g.gain.setValueAtTime(gain, C.currentTime);
+          g.gain.exponentialRampToValueAtTime(.001, C.currentTime + dur);
+          s.connect(f); f.connect(g); g.connect(this.master); s.start(); s.stop(C.currentTime + dur);
+        },
+        kick: function (p) {
+          this.burst(.07, 900, clamp(p / 30, .25, .8)); if (!this.ctx) return; var C = this.ctx, o = C.createOscillator(), g = C.createGain();
+          o.frequency.setValueAtTime(120, C.currentTime); o.frequency.exponentialRampToValueAtTime(45, C.currentTime + .09);
+          g.gain.setValueAtTime(.5, C.currentTime); g.gain.exponentialRampToValueAtTime(.001, C.currentTime + .1);
+          o.connect(g); g.connect(this.master); o.start(); o.stop(C.currentTime + .11);
+        },
+        bounce: function (v) { this.burst(.05, 600, .12 * v); },
+        post: function () {
+          if (!this.ctx) return; var C = this.ctx; var self = this;[1250, 1870].forEach(function (f) {
+            var o = C.createOscillator(), g = C.createGain();
+            o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.25, C.currentTime);
+            g.gain.exponentialRampToValueAtTime(.001, C.currentTime + .35); o.connect(g); g.connect(self.master); o.start(); o.stop(C.currentTime + .36);
+          });
+        },
+        whistle: function (n) {
+          if (!this.ctx) return; n = n || 1; var C = this.ctx;
+          for (var i = 0; i < n; i++) {
+            var t = C.currentTime + i * .22, o = C.createOscillator(), g = C.createGain(), l = C.createOscillator(), lg = C.createGain();
+            o.type = 'square'; o.frequency.value = 2350; l.frequency.value = 32; lg.gain.value = 160;
+            l.connect(lg); lg.connect(o.frequency);
+            g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.16, t + .02); g.gain.setValueAtTime(.16, t + .13); g.gain.linearRampToValueAtTime(0, t + .17);
+            o.connect(g); g.connect(this.master); o.start(t); l.start(t); o.stop(t + .18); l.stop(t + .18);
+          }
+        },
+        cheer: function () { this.excite = 1; },
+        update: function (dt) {
+          if (!this.ctx || !this.master || !this.crowdG) return; this.excite = Math.max(0, this.excite - dt * .22);
+          var g = this.muted ? 0 : .05 + this.excite * .30;
+          this.crowdG.gain.value = lerp(this.crowdG.gain.value, g, Math.min(1, dt * 3));
+          this.master.gain.value = this.muted ? 0 : .85;
+        }
+      };
+      function currentPad() {
+        try {
+          var list = navigator.getGamepads ? navigator.getGamepads() : [];
+          for (var i = 0; i < list.length; i++) { if (list[i] && list[i].connected) return list[i]; }
+        } catch (e) { }
+        return null;
+      }
+      function rumble(s, d) { s = s || 1; d = d || 80; try { var g = currentPad(); if (g && g.vibrationActuator) g.vibrationActuator.playEffect('dual-rumble', { duration: d, strongMagnitude: s, weakMagnitude: s * .6 }); } catch (e) { } }
+      var renderer, scene, camera;
+      var camPos, camLook;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }); }
+      catch (e) { $('boot').textContent = 'خطا: WebGL در دسترس نیست.'; throw e; }
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+      $('stage').appendChild(renderer.domElement);
+      scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1626); scene.fog = new THREE.Fog(0x0a1626, 130, 330);
+      camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, .1, 600);
+      camPos = new THREE.Vector3(0, 26, 70); camLook = new THREE.Vector3(0, 2, 0);
+      addEventListener('resize', function () { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+      scene.add(new THREE.HemisphereLight(0x8fb8ff, 0x1c4021, .6));
+      var sun = new THREE.DirectionalLight(0xfff2dd, 1.15); sun.position.set(60, 85, 40); sun.castShadow = true;
+      sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -72; sun.shadow.camera.right = 72;
+      sun.shadow.camera.top = 72; sun.shadow.camera.bottom = -72; sun.shadow.camera.far = 260; scene.add(sun);
+      function pitchTexture() {
+        var c = document.createElement('canvas'); c.width = 1024; c.height = 672; var x = c.getContext('2d');
+        var U = 1024 / 104, V = 672 / 68; function px(v) { return (v + 52) * U; } function pz(v) { return (v + 34) * V; }
+        for (var i = 0; i < 14; i++) { x.fillStyle = i % 2 ? '#1e8043' : '#186f39'; x.fillRect(i * 1024 / 14, 0, 1024 / 14 + 1, 672); }
+        x.globalAlpha = .06; for (var j = 0; j < 2600; j++) { x.fillStyle = Math.random() > .5 ? '#000' : '#fff'; x.fillRect(Math.random() * 1024, Math.random() * 672, 2, 2); }
+        x.globalAlpha = .95; x.strokeStyle = '#f2f7f2'; x.lineWidth = 3;
+        x.strokeRect(px(-50), pz(-32), 100 * U, 64 * V);
+        x.beginPath(); x.moveTo(px(0), pz(-32)); x.lineTo(px(0), pz(32)); x.stroke();
+        x.beginPath(); x.arc(px(0), pz(0), 9.15 * U, 0, 7); x.stroke();
+        x.beginPath(); x.arc(px(0), pz(0), 4, 0, 7); x.fillStyle = '#f2f7f2'; x.fill();
+        var sides = [-1, 1];
+        for (var si = 0; si < sides.length; si++) {
+          var s = sides[si];
+          x.strokeRect(s > 0 ? px(50) - 16.5 * U : px(-50), pz(-20.15), 16.5 * U, 40.3 * V);
+          x.strokeRect(s > 0 ? px(50) - 5.5 * U : px(-50), pz(-9.16), 5.5 * U, 18.32 * V);
+          x.beginPath(); x.arc(px(s * 39), pz(0), 4, 0, 7); x.fill();
+          var th = Math.acos(5.5 / 9.15);
+          x.beginPath(); x.arc(px(s * 39), pz(0), 9.15 * U, s > 0 ? Math.PI - th : -th, s > 0 ? Math.PI + th : th); x.stroke();
+        }
+        var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t;
+      }
+      function crowdTexture(repX) {
+        var c = document.createElement('canvas'); c.width = 256; c.height = 128; var x = c.getContext('2d');
+        x.fillStyle = '#0e151d'; x.fillRect(0, 0, 256, 128);
+        var pal = ['#c9a06a', '#3b6fd4', '#d43b3b', '#e8e8e8', '#2fae62', '#e3b23c', '#7a4fae', '#20242a', '#2fae9c'];
+        for (var y = 6; y < 124; y += 7)for (var i = 2; i < 254; i += 5)if (Math.random() < .88) { x.fillStyle = pal[(Math.random() * pal.length) | 0]; x.fillRect(i, y, 3.4, 4.6); }
+        var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repX, 1); return t;
+      }
+      function boardTexture() {
+        var c = document.createElement('canvas'); c.width = 1024; c.height = 96; var x = c.getContext('2d');
+        var g = x.createLinearGradient(0, 0, 0, 96); g.addColorStop(0, '#0c1d33'); g.addColorStop(1, '#071224');
+        x.fillStyle = g; x.fillRect(0, 0, 1024, 96); x.font = '700 34px sans-serif'; x.textBaseline = 'middle';
+        var ads = ['ARAD AIR', 'KASRA TECH', 'NOVAN', 'ZIMO', 'HELIX FC', 'OMRAN', 'VANTA', 'DARYA BANK'];
+        for (var i = 0; i < ads.length; i++) { x.fillStyle = i % 2 ? '#c6f24e' : '#eaf2ff'; x.fillText(ads[i], 20 + i * 128, 50); }
+        var t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.repeat.set(4, 1); t.encoding = THREE.sRGBEncoding; return t;
+      }
+      function netTexture() {
+        var c = document.createElement('canvas'); c.width = 64; c.height = 64; var x = c.getContext('2d');
+        x.strokeStyle = 'rgba(240,245,250,.85)'; x.lineWidth = 1.4;
+        for (var i = 0; i <= 64; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 64); x.moveTo(0, i); x.lineTo(64, i); x.stroke(); }
+        var t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 1); return t;
+      }
+      function ballTexture() {
+        var c = document.createElement('canvas'); c.width = 128; c.height = 128; var x = c.getContext('2d');
+        x.fillStyle = '#f4f6f4'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#15181c';
+        var pts = [[22, 26], [64, 14], [104, 30], [40, 64], [88, 60], [20, 100], [66, 96], [108, 102]];
+        for (var i = 0; i < pts.length; i++) { x.beginPath(); x.arc(pts[i][0], pts[i][1], 11, 0, 7); x.fill(); }
+        var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+      }
+      function glowTexture() {
+        var c = document.createElement('canvas'); c.width = 128; c.height = 128; var x = c.getContext('2d');
+        var g = x.createRadialGradient(64, 64, 4, 64, 64, 64); g.addColorStop(0, 'rgba(255,250,230,1)'); g.addColorStop(1, 'rgba(255,250,230,0)');
+        x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c);
+      }
+      function buildStadium() {
+        var ground = new THREE.Mesh(new THREE.CircleGeometry(230, 40), new THREE.MeshLambertMaterial({ color: 0x07130c }));
+        ground.rotation.x = -Math.PI / 2; ground.position.y = -.05; scene.add(ground);
+        var pitch = new THREE.Mesh(new THREE.PlaneGeometry(104, 68), new THREE.MeshStandardMaterial({ map: pitchTexture(), roughness: .92 }));
+        pitch.rotation.x = -Math.PI / 2; pitch.receiveShadow = true; scene.add(pitch);
+        var postMat = new THREE.MeshStandardMaterial({ color: 0xf5f7f7, roughness: .35 });
+        var netM = new THREE.MeshBasicMaterial({ map: netTexture(), transparent: true, opacity: .5, side: THREE.DoubleSide, depthWrite: false });
+        var sides = [-1, 1];
+        for (var si = 0; si < sides.length; si++) {
+          var s = sides[si]; var g = new THREE.Group(); g.position.x = s * 50;
+          var zposts = [-3.66, 3.66];
+          for (var zi = 0; zi < zposts.length; zi++) { var z = zposts[zi]; var p = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, 2.5, 10), postMat); p.position.set(0, 1.25, z); p.castShadow = true; g.add(p); }
+          var bar = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, 7.56, 10), postMat); bar.rotation.x = Math.PI / 2; bar.position.y = 2.44; g.add(bar);
+          var back = new THREE.Mesh(new THREE.PlaneGeometry(7.32, 2.3), netM); back.rotation.y = Math.PI / 2; back.position.set(s * 1.9, 1.15, 0); g.add(back);
+          var top = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 7.32), netM); top.rotation.x = -Math.PI / 2; top.rotation.z = Math.PI / 2; top.position.set(s * .95, 2.35, 0); g.add(top);
+          for (var zi2 = 0; zi2 < zposts.length; zi2++) { var z2 = zposts[zi2]; var sd = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 2.3), netM); sd.position.set(s * .95, 1.15, z2); g.add(sd); }
+          scene.add(g);
+        }
+        var corners = [[-50, -32], [-50, 32], [50, -32], [50, 32]];
+        for (var ci = 0; ci < corners.length; ci++) {
+          var sx = corners[ci][0], sz = corners[ci][1];
+          var pole = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, 1.6), postMat); pole.position.set(sx, .8, sz); scene.add(pole);
+          var fl = new THREE.Mesh(new THREE.PlaneGeometry(.5, .32), new THREE.MeshBasicMaterial({ color: 0xffc94a, side: THREE.DoubleSide })); fl.position.set(sx + .25, 1.4, sz); scene.add(fl);
+        }
+        var bm = new THREE.MeshLambertMaterial({ map: boardTexture() });
+        function mk(w, x, z, ry) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, 1.05, .3), bm); b.position.set(x, .55, z); b.rotation.y = ry; scene.add(b); }
+        mk(108, 0, 35.4, 0); mk(108, 0, -35.4, 0); mk(72, 54.5, 0, Math.PI / 2); mk(72, -54.5, 0, Math.PI / 2);
+        function stand(len) {
+          var grp = new THREE.Group();
+          for (var t = 0; t < 3; t++) {
+            var crowd = new THREE.MeshLambertMaterial({ map: crowdTexture(len / 26) });
+            var dark = new THREE.MeshLambertMaterial({ color: 0x0d141d });
+            var m = new THREE.Mesh(new THREE.BoxGeometry(len, 4.2, 6.5), [dark, dark, dark, dark, crowd, dark]);
+            m.position.set(0, 2.1 + t * 3.4, -(t * 6.6) - 3.25); grp.add(m);
+          }
+          var roof = new THREE.Mesh(new THREE.BoxGeometry(len + 6, .6, 26), new THREE.MeshLambertMaterial({ color: 0x0a0f16 }));
+          roof.position.set(0, 14.6, -11); grp.add(roof);
+          var strip = new THREE.Mesh(new THREE.BoxGeometry(len, .18, .18), new THREE.MeshBasicMaterial({ color: 0xcfe8ff }));
+          strip.position.set(0, 13.9, 1.4); grp.add(strip);
+          return grp;
+        }
+        var n = stand(118); n.position.z = -44; scene.add(n);
+        var so = stand(118); so.position.z = 44; so.rotation.y = Math.PI; scene.add(so);
+        var e = stand(80); e.position.x = 62; e.rotation.y = -Math.PI / 2; scene.add(e);
+        var w = stand(80); w.position.x = -62; w.rotation.y = Math.PI / 2; scene.add(w);
+        var glow = new THREE.SpriteMaterial({ map: glowTexture(), transparent: true, opacity: .9, depthWrite: false });
+        var lightPoles = [[-58, -40], [-58, 40], [58, -40], [58, 40]];
+        for (var li = 0; li < lightPoles.length; li++) {
+          var lsx = lightPoles[li][0], lsz = lightPoles[li][1];
+          var lpole = new THREE.Mesh(new THREE.CylinderGeometry(.4, .5, 26), new THREE.MeshLambertMaterial({ color: 0x22303e }));
+          lpole.position.set(lsx, 13, lsz); scene.add(lpole);
+          var head = new THREE.Mesh(new THREE.BoxGeometry(4.6, 2.6, .8), new THREE.MeshBasicMaterial({ color: 0xfff6dd }));
+          head.position.set(lsx, 26.5, lsz); head.lookAt(0, 2, 0); scene.add(head);
+          var sp = new THREE.Sprite(glow); sp.position.set(lsx, 26.5, lsz); sp.scale.set(16, 16, 1); scene.add(sp);
+        }
+      }
+      var BALL_R = .35, players = [];
+      var SKINS = ['#e8b98f', '#c98d5f', '#8a5a3b', '#f0c9a4', '#6f4630', '#a06a42'];
+      var HAIRS = ['#14161a', '#3a2a18', '#5a3a1e', '#101010', '#6a4a24'];
+
+      function makeKitTexture(T) {
+        var c = document.createElement('canvas'); c.width = 256; c.height = 256;
+        var x = c.getContext('2d'); x.clearRect(0, 0, 256, 256);
+        if (T.kitStyle === 'barca') {
+          x.fillStyle = '#081b3a'; x.fillRect(0, 0, 256, 256);
+          for (var bx = 0; bx < 256; bx += 52) { x.fillStyle = '#7a1731'; x.fillRect(bx, 0, 27, 256); }
+          x.fillStyle = '#b51f36'; x.fillRect(2, 0, 5, 256); x.fillStyle = '#07152f'; x.fillRect(31, 0, 5, 256);
+        } else if (T.kitStyle === 'perspolis') {
+          x.fillStyle = '#e21b23'; x.fillRect(0, 0, 256, 256);
+          x.fillStyle = '#ffffff'; x.fillRect(0, 0, 256, 10); x.fillRect(0, 246, 256, 10);
+          x.beginPath(); x.moveTo(92, 0); x.lineTo(128, 34); x.lineTo(164, 0); x.lineTo(154, 0); x.lineTo(128, 23); x.lineTo(102, 0); x.closePath(); x.fill();
+        } else if (T.kitStyle === 'esteghlal') {
+          x.fillStyle = '#0b4ea2'; x.fillRect(0, 0, 256, 256);
+          x.strokeStyle = 'rgba(255,255,255,.22)'; x.lineWidth = 5;
+          for (var ex = -256; ex < 512; ex += 34) { x.beginPath(); x.moveTo(ex,0); x.lineTo(ex+256,256); x.stroke(); }
+          x.fillStyle = '#ffffff'; x.fillRect(0, 0, 256, 8);
+        } else {
+          x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 256, 256);
+          x.fillStyle = '#123b2a'; x.fillRect(0, 0, 256, 12); x.fillRect(0, 244, 256, 12);
+          x.strokeStyle = '#e45c86'; x.lineWidth = 10; x.beginPath(); x.moveTo(-20, 210); x.lineTo(210, -20); x.stroke();
+          x.strokeStyle = '#e45c86'; x.lineWidth = 7; x.beginPath(); x.moveTo(35, 256); x.lineTo(256, 35); x.stroke();
+        }
+        var tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; return tex;
+      }
+      function buildPlayerModel(team, isGK) {
+        var T = TEAMS[S.matchTeams[team]] || TEAMS[team];
+        var matJ = new THREE.MeshStandardMaterial({ map: isGK ? null : makeKitTexture(T), color: isGK ? T.gk : 0xffffff, roughness: .75 });
+        var matSh = new THREE.MeshStandardMaterial({ color: T.shorts, roughness: .8 });
+        var matSkin = new THREE.MeshStandardMaterial({ color: SKINS[(Math.random() * SKINS.length) | 0], roughness: .85 });
+        var matSock = new THREE.MeshStandardMaterial({ color: isGK ? 0x222831 : T.sock, roughness: .85 });
+        var matHair = new THREE.MeshStandardMaterial({ color: HAIRS[(Math.random() * HAIRS.length) | 0], roughness: .9 });
+        var g = new THREE.Group();
+        function add(geo, mat, x, y, z) { var m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; }
+        add(new THREE.CylinderGeometry(.33, .25, .8, 10), matJ, 0, 1.27, 0);
+        add(new THREE.CylinderGeometry(.1, .12, .12), matSkin, 0, 1.72, 0);
+        add(new THREE.SphereGeometry(.21, 12, 10), matSkin, 0, 1.9, 0);
+        var hair = add(new THREE.SphereGeometry(.215, 12, 8), matHair, 0, 1.99, -.02); hair.scale.set(1, .55, 1);
+        add(new THREE.CylinderGeometry(.27, .3, .3, 10), matSh, 0, .8, 0);
+        var parts = {};
+        var armDefs = [[-1, 'armL'], [1, 'armR']];
+        for (var ai = 0; ai < armDefs.length; ai++) {
+          var s = armDefs[ai][0], nm = armDefs[ai][1];
+          var pv = new THREE.Group(); pv.position.set(.41 * s, 1.6, 0);
+          var a = new THREE.Mesh(new THREE.CylinderGeometry(.085, .075, .6, 8), matSkin); a.position.y = -.3; a.castShadow = true; pv.add(a);
+          g.add(pv); parts[nm] = pv;
+        }
+        var legDefs = [[-1, 'legL'], [1, 'legR']];
+        for (var li = 0; li < legDefs.length; li++) {
+          var s2 = legDefs[li][0], nm2 = legDefs[li][1];
+          var pv2 = new THREE.Group(); pv2.position.set(.15 * s2, .78, 0);
+          var th = new THREE.Mesh(new THREE.CylinderGeometry(.105, .095, .34, 8), matSh); th.position.y = -.17; th.castShadow = true; pv2.add(th);
+          var sh = new THREE.Mesh(new THREE.CylinderGeometry(.088, .07, .44, 8), matSock); sh.position.y = -.55; sh.castShadow = true; pv2.add(sh);
+          var bt = new THREE.Mesh(new THREE.BoxGeometry(.13, .09, .24), new THREE.MeshStandardMaterial({ color: 0x11141a, roughness: .6 })); bt.position.set(0, -.79, .05); bt.castShadow = true; pv2.add(bt);
+          g.add(pv2); parts[nm2] = pv2;
+        }
+        return { g: g, parts: parts };
+      }
+      function spawnTeams() {
+        for (var t = 0; t < 2; t++)for (var i = 0; i < 11; i++) {
+          var formation = FORMATIONS[PLANS[t].formation] || FORMATIONS['4-3-3'];
+          var f = formation[i], isGK = i === 0, m = buildPlayerModel(t, isGK);
+          var teamDef = TEAMS[S.matchTeams[t]] || TEAMS[t];
+          scene.add(m.g);
+          players.push({
+            team: t, idx: i, name: (NAMES[S.matchTeams[t]] || NAMES[t])[i], role: f.r, isGK: isGK, g: m.g, parts: m.parts,
+            pos: new THREE.Vector3(), vel: new THREE.Vector3(), want: new THREE.Vector3(),
+            facing: t === 0 ? Math.PI / 2 : -Math.PI / 2, baseX: 0, baseZ: 0, stamina: 100, sprintLock: false,
+            kickCd: 0, tackleCd: 0, decideT: rnd(.3), holdT: 0, state: 'play', stateT: 0, slideDir: null, slideHit: false,
+            diveTo: null, gkHold: 0, chase: false, support: false, phase: rnd(6), skill: clamp(rnd(.35, .85) * (teamDef.power || 1), .25, .98), active: true, user: false, aiRole: 'anchor', aiTarget: null, markTarget: null, thinkT: 0
+          });
+        }
+      }
+      function recomputeBases() {
+        for (var pi = 0; pi < players.length; pi++) {
+          var p = players[pi]; var d = S.attackDir[p.team]; var formation = FORMATIONS[PLANS[p.team].formation] || FORMATIONS['4-3-3']; var f = formation[p.idx];
+          var preset = PLAN_PRESETS[0]; for (var psi = 0; psi < PLAN_PRESETS.length; psi++) { if (PLAN_PRESETS[psi].key === PLANS[p.team].mentality) { preset = PLAN_PRESETS[psi]; break; } }
+          p.baseX = d * f.x * 46 * preset.shape; p.baseZ = f.z * 52 * preset.shape;
+          if (p.role === 'FW') p.baseX += d * (preset.forward - 1) * 5;
+          if (p.role === 'DF') p.baseX += d * (preset.def - 1) * 3;
+        }
+      }
+      var ball = { mesh: null, vel: new THREE.Vector3(), curve: 0 };
+      function spawnBall() { ball.mesh = new THREE.Mesh(new THREE.SphereGeometry(BALL_R, 18, 14), new THREE.MeshStandardMaterial({ map: ballTexture(), roughness: .5 })); ball.mesh.castShadow = true; scene.add(ball.mesh); }
+      function bpos() { return ball.mesh.position; }
+      function kickBall(p, dir, power, lift, curve) {
+        ball.vel.set(dir.x * power, lift, dir.z * power); ball.curve = curve || 0;
+        p.kickCd = .45; S.possession = null; S.lastTouchTeam = p.team; S.lastTouchPlayer = p;
+        SND.kick(power); rumble(clamp(power / 30, .3, 1), 60);
+      }
+      var indicators = [];
+      function spawnIndicators() {
+        var colors = [0xc6f24e, 0xff9d2b];
+        for (var i = 0; i < 2; i++) {
+          var ring = new THREE.Mesh(new THREE.TorusGeometry(.6, .05, 8, 28), new THREE.MeshBasicMaterial({ color: colors[i] }));
+          ring.rotation.x = -Math.PI / 2; ring.position.y = .06; scene.add(ring);
+          var arrow = new THREE.Mesh(new THREE.ConeGeometry(.22, .5, 4), new THREE.MeshBasicMaterial({ color: colors[i] }));
+          arrow.rotation.x = Math.PI; scene.add(arrow);
+          indicators.push({ ring: ring, arrow: arrow });
+        }
+      }
+      var keys = {}, K = { pass: false, slide: false, sw: false, long: false, gk: false, pause: false, plan: false };
+      var keyNames = {};
+      var inputState = { x: 0, z: 0 };
+      function keyDown(e) {
+        var code = e.code || ''; var key = (e.key || '').toLowerCase();
+        if (S.mode === 'match' && ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyX', 'KeyY', 'KeyC', 'KeyZ', 'KeyV', 'KeyQ', 'KeyE'].indexOf(code) >= 0) e.preventDefault();
+        keys[code] = true; if (key) keyNames[key] = true;
+        if (e.repeat) return;
+        if (code === 'KeyX' || code === 'Space' || key === 'x') K.pass = true;
+        if (code === 'KeyV' || key === 'v') K.slide = true;
+        if (code === 'KeyY' || key === 'y') K.long = true;
+        if (code === 'KeyQ' || key === 'q') K.sw = 1;
+        if (code === 'KeyE' || key === 'e') K.sw = -1;
+        if (code === 'KeyP' || code === 'Escape') K.pause = true;
+        if (code === 'KeyG') K.plan = true;
+      }
+      function keyUp(e) { delete keys[e.code || '']; if (e.key) delete keyNames[e.key.toLowerCase()]; }
+      document.addEventListener('keydown', keyDown, { capture: true, passive: false });
+      document.addEventListener('keyup', keyUp, { capture: true, passive: false });
+      document.addEventListener('pointerdown', function () { try { document.body.focus(); } catch (e) { } }, { passive: true });
+      window.addEventListener('blur', function () { keys = {}; keyNames = {}; });
+      var GP = [
+        { on: false, axes: { x: 0, y: 0 }, raxes: { x: 0, y: 0 }, b: {}, edge: {}, index: -1, padId: '' },
+        { on: false, axes: { x: 0, y: 0 }, raxes: { x: 0, y: 0 }, b: {}, edge: {}, index: -1, padId: '' }
+      ];
+      function getConnectedPads(){
+        var list=navigator.getGamepads ? navigator.getGamepads() : [];
+        var result=[];
+        for(var i=0;i<list.length;i++){ if(list[i] && list[i].connected) result.push(list[i]); }
+        result.sort(function(a,b){ return (a.index||0)-(b.index||0); });
+        return result;
+      }
+      function connectedGamepadCount(){ return getConnectedPads().length; }
+      function hasAnyGamepad(){ return connectedGamepadCount() > 0; }
+      function gpPressed(g, i) {
+        var b = g && g.buttons && g.buttons[i];
+        return !!(b && ((b.pressed === true) || (Number(b.value || 0) > .5)));
+      }
+      function pollGamepad() {
+        var connected = getConnectedPads();
+        for (var idx = 0; idx < 2; idx++) {
+          var g = connected[idx] || null, state = GP[idx];
+          state.on = !!g;
+          state.index = g ? g.index : -1;
+          state.padId = g ? (g.id || '') : '';
+          if (!g) { state.b = {}; state.edge = {}; state.axes.x = state.axes.y = 0; state.raxes.x = state.raxes.y = 0; continue; }
+          var ax = Number(g.axes && g.axes.length > 0 ? g.axes[0] : 0) || 0;
+          var ay = Number(g.axes && g.axes.length > 1 ? g.axes[1] : 0) || 0;
+          if (Math.abs(ax) < .18) { if (gpPressed(g, 14)) ax = -1; else if (gpPressed(g, 15)) ax = 1; }
+          if (Math.abs(ay) < .18) { if (gpPressed(g, 12)) ay = -1; else if (gpPressed(g, 13)) ay = 1; }
+          var dead = .12;
+          state.axes.x = Math.abs(ax) > dead ? Math.max(-1, Math.min(1, ax)) : 0;
+          state.axes.y = Math.abs(ay) > dead ? Math.max(-1, Math.min(1, ay)) : 0;
+          var rx = Number(g.axes && g.axes.length > 2 ? g.axes[2] : 0) || 0;
+          var ry = Number(g.axes && g.axes.length > 3 ? g.axes[3] : 0) || 0;
+          state.raxes.x = Math.abs(rx) > dead ? Math.max(-1, Math.min(1, rx)) : 0;
+          state.raxes.y = Math.abs(ry) > dead ? Math.max(-1, Math.min(1, ry)) : 0;
+          var nb = {}, blen = g.buttons ? g.buttons.length : 0;
+          for (var bi = 0; bi < blen; bi++) nb[bi] = gpPressed(g, bi);
+          state.edge = {};
+          for (var k in nb) state.edge[k] = nb[k] && !state.b[k];
+          state.b = nb;
+        }
+      }
+      function refreshControlMode(showBanner){
+        if (S.mode !== 'match') { S.local2P = false; return; }
+        var count = connectedGamepadCount();
+        var touchOn = S.settings.touchEnabled !== false;
+        var mode = S.settings.gameMode || 'auto';
+        var canTouch2P = touchOn && count >= 1;       // P1 touch + P2 pad
+        var canPad2P = count >= 2;                    // P1 pad + P2 pad
+        var want2P = mode === 'two' ? (canTouch2P || canPad2P) : (mode === 'single' ? false : (canPad2P || canTouch2P));
+        if (want2P !== S.local2P) {
+          S.local2P = want2P;
+          clearControlledTeam(0); clearControlledTeam(1);
+          if (want2P) {
+            var c0 = nearestField(0, bpos()), c1 = nearestField(1, bpos());
+            if (c0) setControlled(c0,0); if (c1) setControlled(c1,1);
+            if (showBanner) {
+              if (touchOn && count === 1) banner('حالت دونفره فعال شد', 'نفر ۱: تاچ · نفر ۲: دسته', 1700);
+              else banner('حالت دونفره فعال شد', 'نفر ۱: دسته اول · نفر ۲: دسته دوم', 1700);
+            }
+          } else {
+            var only = nearestField(0, bpos()); if (only) setControlled(only,0);
+            if (showBanner) banner('حالت تک‌نفره فعال شد', 'حریف توسط هوش مصنوعی کنترل می‌شود', 1500);
+          }
+          showHint();
+        }
+      }
+      window.addEventListener('gamepadconnected', function (e) {
+        pollGamepad();
+        toast('🎮 دسته متصل شد');
+        refreshControlMode(true);
+      });
+      window.addEventListener('gamepaddisconnected', function (e) {
+        pollGamepad();
+        toast(connectedGamepadCount() ? '🎮 یک دسته قطع شد' : '🎮 همه دسته‌ها قطع شدند');
+        refreshControlMode(true);
+      });
+      var UI_KEYS = { up: false, down: false, left: false, right: false, a: false, b: false };
+      var menuFocus = 0;
+      function visibleButtons(root) {
+        root = root || document;
+        var all = root.querySelectorAll('button:not([disabled])');
+        var result = [];
+        for (var i = 0; i < all.length; i++) {
+          var b = all[i]; var r = b.getBoundingClientRect(); var st = getComputedStyle(b);
+          if (st.display !== 'none' && st.visibility !== 'hidden' && r.width > 0 && r.height > 0) result.push(b);
+        }
+        return result;
+      }
+      function setFocusedButton(btns, idx) {
+        if (!btns.length) return null;
+        idx = (idx + btns.length) % btns.length; menuFocus = idx;
+        for (var i = 0; i < btns.length; i++)btns[i].classList.toggle('gpFocus', i === idx);
+        var b = btns[idx]; try { b.scrollIntoView({ block: 'nearest' }); } catch (e) { }
+        return b;
+      }
+      function menuGamepadTick() {
+        var state = GP[0]; if (!state.on || (S.mode === 'match' && S.paused === false)) return;
+        var ax = state.axes.x, ay = state.axes.y;
+        function edge(key) { return !!state.edge[key]; }
+        var navUp = edge(12) || (ay < -.75 && !UI_KEYS.up), navDown = edge(13) || (ay > .75 && !UI_KEYS.down);
+        var navLeft = edge(14) || (ax < -.75 && !UI_KEYS.left), navRight = edge(15) || (ax > .75 && !UI_KEYS.right);
+        var select = padEdge(0, 'Y'), back = padEdge(0, 'B');
+        UI_KEYS.up = ay < -.45; UI_KEYS.down = ay > .45; UI_KEYS.left = ax < -.45; UI_KEYS.right = ax > .45;
+        UI_KEYS.a = padHeld(0, 'Y'); UI_KEYS.b = padHeld(0, 'B');
+        var panels = document.querySelectorAll('#teamPanel:not(.hidden),#planPanel:not(.hidden),#settingsPanel:not(.hidden),#helpPanel:not(.hidden)');
+        var openPanel = panels.length > 0 ? panels[0] : null;
+        if (openPanel) {
+          var btns = visibleButtons(openPanel); if (!btns.length) return;
+          if (menuFocus >= btns.length) menuFocus = 0;
+          if (navUp || navLeft) { setFocusedButton(btns, menuFocus - 1); return; }
+          if (navDown || navRight) { setFocusedButton(btns, menuFocus + 1); return; }
+          if (select) { btns[menuFocus].click(); return; }
+          if (back) {
+            var closeBtn = null;
+            for (var i = 0; i < btns.length; i++) { if (/بستن|تأیید|resume|ادامه|cancel/i.test(btns[i].textContent || '')) { closeBtn = btns[i]; break; } }
+            if (closeBtn) closeBtn.click(); else openPanel.classList.add('hidden');
+            return;
+          }
+          return;
+        }
+        if (S.paused) {
+          var root = $('pauseOv'), btns2 = visibleButtons(root); if (!btns2.length) return;
+          if (menuFocus >= btns2.length) menuFocus = 0;
+          if (navUp || navLeft) { setFocusedButton(btns2, menuFocus - 1); return; }
+          if (navDown || navRight) { setFocusedButton(btns2, menuFocus + 1); return; }
+          if (select) { btns2[menuFocus].click(); return; }
+          if (back) { $('pResume').click(); return; }
+          return;
+        }
+        if (S.mode === 'menu') {
+          var btns3 = visibleButtons($('menu')); if (!btns3.length) return;
+          if (menuFocus >= btns3.length) menuFocus = 0;
+          if (navUp || navLeft) { setFocusedButton(btns3, menuFocus - 1); return; }
+          if (navDown || navRight) { setFocusedButton(btns3, menuFocus + 1); return; }
+          if (select) { btns3[menuFocus].click(); return; }
+          if (back) { return; }
+        }
+      }
+      function teamUsesTouch(team){
+        if (team !== 0 || !(TOUCH && TOUCH.enabled) || S.settings.touchEnabled === false) return false;
+        var count = connectedGamepadCount();
+        if (!S.local2P) return true;       // forced/normal single player with touch enabled
+        return count === 1;                // 2P: touch is P1 only when exactly one pad exists
+      }
+      function teamPadSlot(team){
+        var count = connectedGamepadCount();
+        if (S.settings.gameMode === 'single' || !S.local2P) return count > 0 ? 0 : -1;
+        if (count >= 2) return team;      // two physical pads
+        if (team === 1 && count === 1) return 0; // touch P1 + one pad P2
+        return -1;
+      }
+      function getMoveInput(useTouch) {
+        if (useTouch && TOUCH && TOUCH.enabled && S.mode === 'match' && !S.paused) {
+          var tx = TOUCH.moveX || 0, tz = TOUCH.moveZ || 0, tm = Math.hypot(tx,tz);
+          if (tm > 1) { tx/=tm; tz/=tm; }
+          inputState.x = tx; inputState.z = tz;
+          return {x:tx,z:tz,mag:Math.min(1,tm)};
+        }
+        var x = 0, z = 0;
+        var left = keys['KeyA'] || keys['ArrowLeft'] || keyNames['a'] || keyNames['arrowleft'];
+        var right = keys['KeyD'] || keys['ArrowRight'] || keyNames['d'] || keyNames['arrowright'];
+        var up = keys['KeyW'] || keys['ArrowUp'] || keyNames['w'] || keyNames['arrowup'];
+        var down = keys['KeyS'] || keys['ArrowDown'] || keyNames['s'] || keyNames['arrowdown'];
+        if (left) x -= 1; if (right) x += 1; if (up) z -= 1; if (down) z += 1;
+        var slot = teamPadSlot(0), gx = slot >= 0 ? GP[slot].axes.x : 0, gz = slot >= 0 ? GP[slot].axes.y : 0;
+        if (x === 0 && z === 0) { x = gx; z = gz; }
+        else { x += gx * .18; z += gz * .18; }
+        var m = Math.hypot(x, z); if (m > 1) { x /= m; z /= m; }
+        inputState.x = x; inputState.z = z;
+        return { x: x, z: z, mag: Math.min(1, m) };
+      }
+      function getPadMoveInput(padIdx) {
+        var state = GP[padIdx];
+        var x = state.axes.x, z = state.axes.y;
+        var m = Math.hypot(x, z); if (m > 1) { x /= m; z /= m; }
+        return { x: x, z: z, mag: Math.min(1, m) };
+      }
+      /* ===== نگاشت واقعی دسته‌ی کاربر =====
+         بر اساس چیدمان دسته‌ی شما در Gamepad API:
+         Y = 0  (تأیید در منو / پاس بلند در بازی)
+         B = 1  (بازگشت در منو / تکل در بازی)
+         A = 2  (پاس در بازی)
+         X = 3  (شوت در بازی)
+         LB = 4 (سوییچ بازیکن)
+         RB = 5 (سرعت)
+      */
+      var PAD = { Y: 0, B: 1, A: 2, X: 3, LB: 4, RB: 5, LT: 6, RT: 7, START: 9 };
+      function padEdge(i, btn) { i = i || 0; return !!GP[i].edge[PAD[btn]]; }
+      function padHeld(i, btn) { i = i || 0; return !!GP[i].b[PAD[btn]]; }
+      function sprintHeld() { return keys['ShiftLeft'] || keys['ShiftRight'] || keyNames['shift'] || padHeld(0, 'RB'); }
+      function gpPassEdge(i) { return padEdge(i, 'A'); }
+      function gpTackleEdge(i) { return padEdge(i, 'B'); }
+      function gpShootHeld(i) { return padHeld(i, 'X'); }
+      function gpLongHeld(i) { return padHeld(i, 'Y'); }
+      function gpSwitchEdge(i) { return padEdge(i, 'LB'); }
+      function gpGKSwitchEdge(i) { return padEdge(i, 'LT'); }
+      function gpSprintHeld(i) { return padHeld(i, 'RB'); }
+      function nearestOppDist(p) { var d = 99; for (var i = 0; i < players.length; i++) { var q = players[i]; if (!q.active || q.team === p.team) continue; var dd = d2(p, q); if (dd < d) d = dd; } return d; }
+      function activeOf(t) { var result = []; for (var i = 0; i < players.length; i++) { var p = players[i]; if (p.active && p.team === t) result.push(p); } return result; }
+      function nearestField(t, pt, excl) {
+        var best = null, bd = 1e9;
+        var act = activeOf(t);
+        for (var i = 0; i < act.length; i++) { var p = act[i]; if (p.isGK || p === excl) continue; var dd = d2(p, pt); if (dd < bd) { bd = dd; best = p; } } return best;
+      }
+      function findPreset(key) { for (var i = 0; i < PLAN_PRESETS.length; i++) { if (PLAN_PRESETS[i].key === key) return PLAN_PRESETS[i]; } return PLAN_PRESETS[0]; }
+      function moveToward(p, tx, tz, sprint) {
+        var dx = tx - p.pos.x, dz = tz - p.pos.z, dd = Math.hypot(dx, dz);
+        var preset = findPreset(PLANS[p.team].mentality);
+        var teamDef = TEAMS[S.matchTeams[p.team]] || TEAMS[p.team];
+        var base = 6.4 * (.9 + p.skill * .2) * (p.team === 1 ? diffFor(1).speed : 1) * (preset.speed || 1) * (teamDef.power || 1);
+        var sp = base * (sprint ? 1.32 : 1) * clamp(dd / 2.2, .25, 1);
+        if (p.stamina < 15) sp *= .8;
+        p.want.set(dd > .05 ? dx / dd * sp : 0, 0, dd > .05 ? dz / dd * sp : 0);
+      }
+      function lineBlocked(a, b, team, clearance) {
+        clearance = clearance || 1.15;
+        var vx = b.x - a.x, vz = b.z - a.z, len = Math.hypot(vx, vz) || 1;
+        for (var i = 0; i < players.length; i++) {
+          var q = players[i];
+          if (!q.active || q.team === team) continue;
+          var wx = q.pos.x - a.x, wz = q.pos.z - a.z, t = clamp((wx * vx + wz * vz) / (len * len), 0, 1);
+          var px = a.x + vx * t, pz = a.z + vz * t;
+          if (Math.hypot(q.pos.x - px, q.pos.z - pz) < clearance) return true;
+        }
+        return false;
+      }
+      function bestOpenTeammate(p) {
+        var mates = activeOf(p.team); var filtered = [];
+        for (var i = 0; i < mates.length; i++) { if (mates[i] !== p && !mates[i].isGK) filtered.push(mates[i]); }
+        var dir = S.attackDir[p.team]; var best = null, bestScore = -1e9;
+        for (var j = 0; j < filtered.length; j++) {
+          var q = filtered[j];
+          var dx = q.pos.x - p.pos.x, dz = q.pos.z - p.pos.z, dd = Math.hypot(dx, dz) || 1;
+          if (dd < 4 || dd > 34) continue;
+          var forward = dx * dir;
+          var open = nearestOppDist(q);
+          var lane = lineBlocked(p.pos, q.pos, p.team) ? -18 : 18;
+          var role = q.role === 'FW' ? 8 : q.role === 'MF' ? 4 : 0;
+          var score = forward * 1.5 + open * 3 - dd * .55 + lane + role + q.skill * 8 + (q.support ? 5 : 0);
+          if (score > bestScore) { bestScore = score; best = q; }
+        }
+        return best;
+      }
+      function computeChasers() {
+        var bp = bpos();
+        var pred = { x: clamp(bp.x + ball.vel.x * .22, -51, 51), z: clamp(bp.z + ball.vel.z * .22, -33, 33) };
+        for (var t = 0; t < 2; t++) {
+          var own = S.possession && S.possession.active && S.possession.team === t;
+          var enemy = S.possession && S.possession.active && S.possession.team !== t ? S.possession : null;
+          var all = activeOf(t); var list = [];
+          for (var i = 0; i < all.length; i++) { if (!all[i].isGK) list.push(all[i]); }
+          var plan = PLANS[t];
+          var pressLevel = (PRESS[plan.press] || PRESS.balanced).value;
+          for (var j = 0; j < list.length; j++) { list[j].chase = false; list[j].support = false; list[j].markTarget = null; list[j].aiRole = 'anchor'; }
+          if (!S.possession) {
+            var sorted = list.slice().sort(function (a, b) { return d2(a, pred) - d2(b, pred); });
+            var ch = sorted[0];
+            if (ch) { ch.chase = true; ch.aiRole = 'intercept'; }
+            for (var k = 0; k < list.length; k++) if (list[k] !== ch) list[k].aiRole = list[k].role === 'DF' ? 'cover' : list[k].role === 'MF' ? 'support' : 'run';
+            continue;
+          }
+          if (own) {
+            var carrier = S.possession;
+            var mates = []; for (var m = 0; m < list.length; m++) { if (list[m] !== carrier) mates.push(list[m]); }
+            var runners = mates.slice().sort(function (a, b) {
+              var ad = d2(a, carrier), bd = d2(b, carrier);
+              var ar = a.role === 'FW' ? 5 : a.role === 'MF' ? 3 : 0;
+              var br = b.role === 'FW' ? 5 : b.role === 'MF' ? 3 : 0;
+              return (bd - br) - (ad - ar);
+            });
+            for (var r = 0; r < runners.length && r < 1; r++) { runners[r].support = true; runners[r].aiRole = 'support'; }
+            for (var r2 = 1; r2 < runners.length && r2 < 3; r2++) { runners[r2].aiRole = 'run'; }
+            for (var r3 = 0; r3 < mates.length; r3++) { if (mates[r3].aiRole === 'anchor') mates[r3].aiRole = mates[r3].role === 'DF' ? 'cover' : 'support'; }
+            continue;
+          }
+          var carrier2 = enemy;
+          var goalDir = S.attackDir[t], ourGoalX = -goalDir * 50;
+          var danger = (Math.abs(carrier2.pos.x - ourGoalX) < 34) || Math.abs(carrier2.pos.z) < 11;
+          var candidates = list.slice().sort(function (a, b) {
+            var da = d2(a, carrier2), db = d2(b, carrier2);
+            var roleA = a.role === 'MF' ? 2.2 : a.role === 'DF' ? 1.1 : 0;
+            var roleB = b.role === 'MF' ? 2.2 : b.role === 'DF' ? 1.1 : 0;
+            return (da - roleA) - (db - roleB);
+          });
+          var first = candidates[0];
+          if (first && d2(first, carrier2) < (danger ? 15.5 * pressLevel : 10.5 * pressLevel)) {
+            first.chase = true; first.aiRole = 'press'; first.markTarget = carrier2;
+          }
+          var second = null;
+          for (var s = 0; s < candidates.length; s++) { if (candidates[s] !== first) { second = candidates[s]; break; } }
+          if (second && first && danger && pressLevel > 0.95 && d2(first, carrier2) < 8.5 && d2(second, carrier2) < 17) {
+            second.chase = true; second.aiRole = 'press2'; second.markTarget = carrier2;
+          }
+          for (var r4 = 0; r4 < list.length; r4++) {
+            var p = list[r4];
+            if (p === first || p === second) continue;
+            var threats = activeOf(carrier2.team); var threatList = [];
+            for (var ti = 0; ti < threats.length; ti++) { if (!threats[ti].isGK) threatList.push(threats[ti]); }
+            threatList.sort(function (a, b) {
+              var as2 = d2(p, a) + Math.max(0, Math.abs(a.pos.x - ourGoalX) - 22) * .08;
+              var bs2 = d2(p, b) + Math.max(0, Math.abs(b.pos.x - ourGoalX) - 22) * .08;
+              return as2 - bs2;
+            });
+            var th = threatList[0];
+            var thDanger = th && ((Math.abs(th.pos.x - ourGoalX) < 28) || Math.abs(th.pos.z) < 9);
+            p.aiRole = p.role === 'DF' ? (thDanger ? 'mark' : 'cover') : (p.role === 'MF' ? 'support' : 'run');
+            p.markTarget = thDanger ? th : null;
+          }
+        }
+      }
+      function tackleSuccess(t, c) {
+        // تکل موفق = توپ فوراً در اختیار بازیکن تکل‌زن قرار می‌گیرد.
+        // این کار باعث می‌شود توپ‌گیری به برخورد تصادفیِ توپ و بازیکن وابسته نباشد.
+        c.state = 'fall'; c.stateT = .7;
+        c.gkHold = 0;
+        t.tackleCd = .18;
+        S.possession = null;
+        var a = Math.atan2(t.pos.x - c.pos.x, t.pos.z - c.pos.z);
+        ball.vel.set(Math.sin(a) * 2.2, .7, Math.cos(a) * 2.2); ball.curve = 0;
+        // کمی جلو بردن بازیکن تکل‌زن برای حس طبیعی‌ترِ توپ‌گیری
+        var push = Math.min(.55, Math.max(.15, 1.0 - d2(t, c) * .18));
+        t.pos.x += Math.sin(t.facing) * push;
+        t.pos.z += Math.cos(t.facing) * push;
+        clampPos(t);
+        setPossession(t);
+        S.lastTouchTeam = t.team; S.lastTouchPlayer = t;
+        SND.burst(.08, 700, .3); rumble(.72, 85);
+        comment(['تکل تمیز!', 'توپ ربوده شد!', 'توپ‌گیری عالی!', 'دفاع بی‌نقص!'], .95);
+      }
+      function tackleFail(t, c, foulP) { t.state = 'fall'; t.stateT = .8; if (Math.random() < foulP) doFoul(bpos(), t.team, true); }
+      function carrierAI(p, dt) {
+        p.holdT += dt; p.decideT -= dt;
+        var dir = S.attackDir[p.team], gx = dir * 50, goalD = Math.abs(gx - p.pos.x), press = nearestOppDist(p);
+        var open = bestOpenTeammate(p);
+        if (p.decideT <= 0) {
+          var mp = findPreset(PLANS[p.team].mentality);
+          p.decideT = .06 + diffFor(p.team).decide * .28 + rnd(.07) / (mp.forward || 1);
+          var shotLane = !lineBlocked(p.pos, { x: gx, z: p.pos.z }, p.team, .85);
+          var inRange = goalD < 29;
+          if (inRange && Math.random() < clamp(.46 + (29 - goalD) * .022 + (p.role === 'FW' ? .10 : 0), .42, .82) && (shotLane || goalD < 15)) {
+            doShoot(p, 19 + rnd(8)); return;
+          }
+          if (open && ((press < 7.5 && Math.random() < .70) || (press < 4.5 && Math.random() < .95) || p.holdT > 1.65)) {
+            doPass(p, null); return;
+          }
+          if (p.holdT > 2.15) {
+            if (open) doPass(p, null);
+            else { var dd = new THREE.Vector3(dir, 0, p.pos.z > 0 ? -.28 : .28).normalize(); kickBall(p, dd, 20 + rnd(5), 5.5, 0); }
+            return;
+          }
+        }
+        var tx = clamp(p.pos.x + dir * (press > 7 ? 5.5 : 12), -49, 49);
+        var tz = clamp(p.pos.z, -27, 27);
+        if (open && press > 5) { tz = lerp(tz, open.pos.z, .52); tx = lerp(tx, open.pos.x, .22); }
+        var opps = players.filter(function (q) { return q.active && q.team !== p.team && !q.isGK; }).sort(function (a, b) { return d2(a, p) - d2(b, p); });
+        var opp = opps[0];
+        if (opp && d2(p, opp) < 7) { var side = Math.sign(p.pos.z - opp.pos.z || 1); tz += side * 3.4; tx += dir * 2.0; }
+        moveToward(p, clamp(tx, -50, 50), clamp(tz, -30, 30), press > 6 && p.stamina > 22);
+      }
+      function chaseAI(p, dt) {
+        var bp = bpos();
+        var target = S.possession && S.possession.active && S.possession.team !== p.team ? S.possession : null;
+        if (!target) { moveToward(p, bp.x + ball.vel.x * .22, bp.z + ball.vel.z * .22, false); return; }
+        var dir = S.attackDir[p.team];
+        var ourGoalX = -dir * 50;
+        var distToCarrier = Math.hypot(target.pos.x - p.pos.x, target.pos.z - p.pos.z);
+        var danger = Math.abs(target.pos.x - ourGoalX) < 34 || Math.abs(target.pos.z) < 10;
+        var pressLevel = (PRESS[PLANS[p.team].press] || PRESS.balanced).value;
+        var side = Math.sign((target.pos.z - p.pos.z) || 1);
+        var tx = target.pos.x - dir * (danger ? 0.8 : 2.2);
+        var tz = target.pos.z - side * (danger ? 0.7 : 1.8);
+        if (p.aiRole === 'press') {
+          var sprint = distToCarrier > 5.5 && p.stamina > 28 && pressLevel > .85;
+          if (sprint) p.stamina = Math.max(0, p.stamina - dt * 5.5); else p.stamina = Math.min(100, p.stamina + dt * 2.5);
+          moveToward(p, tx, tz, sprint);
+        } else if (p.aiRole === 'press2') {
+          var side2 = Math.sign((target.pos.z - p.pos.z) || 1);
+          var tx2 = target.pos.x - dir * (danger ? 2.6 : 3.6);
+          var tz2 = target.pos.z - side2 * (danger ? 2.7 : 3.4);
+          var sprint2 = distToCarrier > 7.5 && p.stamina > 34;
+          if (sprint2) p.stamina = Math.max(0, p.stamina - dt * 3.5);
+          moveToward(p, tx2, tz2, sprint2);
+        } else {
+          var laneX = clamp(target.pos.x - dir * (p.role === 'DF' ? 7 : 4), -49, 49);
+          var laneZ = clamp(p.baseZ + clamp((target.pos.z - p.baseZ) * .28, -5, 5), -30, 30);
+          moveToward(p, laneX, laneZ, false);
+        }
+      }
+      function anchorAI(p) {
+        var dir = S.attackDir[p.team], myHas = S.possession && S.possession.active && S.possession.team === p.team;
+        if (p.aiRole === 'intercept' || p.aiRole === 'press' || p.aiRole === 'press2') {
+          var target = p.markTarget && p.markTarget.active ? p.markTarget : bpos();
+          var pred = { x: clamp(target.pos ? target.pos.x + target.vel.x * .18 : target.x + ball.vel.x * .18, -51, 51), z: clamp(target.pos ? target.pos.z + target.vel.z * .18 : target.z + ball.vel.z * .18, -33, 33) };
+          moveToward(p, pred.x, pred.z, p.aiRole !== 'press2'); return;
+        }
+        if (p.aiRole === 'mark' && p.markTarget && p.markTarget.active) {
+          var m = p.markTarget, offset = m.role === 'FW' ? 3.5 : 2.4;
+          var tx = clamp(m.pos.x - dir * offset, -49, 49), tz = clamp(m.pos.z, -30, 30);
+          moveToward(p, tx, tz, d2(p, m) > 8 && p.stamina > 34); return;
+        }
+        if (p.aiRole === 'run') {
+          var progress = clamp((bpos().x * dir + 50) / 100, 0, 1);
+          var spaceX = clamp(p.baseX + dir * (8 + progress * 23), -45, 45);
+          var laneZ = clamp(p.baseZ + Math.sin(performance.now() * .0012 + p.idx) * 3.0, -25, 25);
+          moveToward(p, spaceX, laneZ, d2(p, { x: spaceX, z: laneZ }) > 7 && p.stamina > 30); return;
+        }
+        if (p.aiRole === 'support') {
+          var carrier = S.possession && S.possession.team === p.team ? S.possession : null;
+          var target2 = carrier || { pos: bpos() };
+          var side = (p.baseZ >= 0 ? 1 : -1);
+          var tx2 = clamp(target2.pos.x + dir * (p.role === 'MF' ? 7 : 4), -45, 45);
+          var tz2 = clamp(target2.pos.z + side * 5.5, -27, 27);
+          moveToward(p, tx2, tz2, d2(p, { x: tx2, z: tz2 }) > 7 && p.stamina > 30); return;
+        }
+        var push = p.role === 'FW' ? (myHas ? 11 : -4) : p.role === 'MF' ? (myHas ? 6 : -6) : (myHas ? 2 : -9);
+        if (p.aiRole === 'cover') {
+          var targetX = clamp(bpos().x * 0.38 + dir * (-2), -34, 34);
+          var targetZ = clamp(p.baseZ + bpos().z * .18, -27, 27);
+          moveToward(p, targetX, targetZ, d2(p, { x: targetX, z: targetZ }) > 10 && p.stamina > 35); return;
+        }
+        var tx3 = clamp(p.baseX + clamp(bpos().x * .42, -24, 24) + dir * push, -49, 49);
+        var tz3 = clamp(p.baseZ + clamp(bpos().z * .30, -18, 18), -30, 30);
+        moveToward(p, tx3, tz3, d2(p, { x: tx3, z: tz3 }) > 10 && p.stamina > 30);
+      }
+      function gkUpdate(p, dt) {
+        var dir = S.attackDir[p.team], gx = -dir * 50, bp = bpos();
+        var HOME_X = gx + dir * 5.5;
+        var minX = Math.min(gx, gx + dir * 18), maxX = Math.max(gx, gx + dir * 18);
+        var maxZ = 15.5;
+        if (S.possession === p) {
+          p.gkHold -= dt; p.want.set(0, 0, 0); p.vel.set(0, 0, 0); p.facing = dir > 0 ? Math.PI / 2 : -Math.PI / 2;
+          if (p.gkHold <= 0) gkPunt(p); return;
+        }
+        var speed = Math.hypot(ball.vel.x, ball.vel.z);
+        var loose = !S.possession;
+        var targetX = HOME_X + clamp((bp.x - gx) * 0.16, -6, 7);
+        var targetZ = clamp(bp.z * 0.42, -maxZ, maxZ);
+        targetX = clamp(targetX, minX, maxX);
+        if (loose && speed > 8 && ball.vel.x * dir < 0) {
+          var t = (gx - bp.x) / (ball.vel.x || 0.001);
+          if (t > 0 && t < 1.8) {
+            var zi = clamp(bp.z + ball.vel.z * t, -12, 12);
+            p.state = 'dive'; p.stateT = .52; p.diveTo = { x: clamp(gx + dir * (1.8 + Math.min(7, Math.abs(bp.x - gx) * .12)), minX, maxX), z: zi };
+          }
+        }
+        if (p.state === 'dive') {
+          var dx = p.diveTo.x - p.pos.x, dz = p.diveTo.z - p.pos.z, dd = Math.hypot(dx, dz) || 1;
+          p.want.set(dx / dd * 12, 0, dz / dd * 12); p.stateT -= dt;
+          if (d2(p, bp) < 2.35 && Math.abs(bp.x - gx) < 22 && bp.y < 3.4) {
+            var missChance = S.settings.difficulty === 0 ? .60 : S.settings.difficulty === 1 ? .45 : .30;
+            var nearGoal = Math.abs(bp.x - gx) < 30;
+            var shotPower = S.lastShot && S.lastShot.power || 0;
+            var saveChance = nearGoal ? (1 - missChance) : .50;
+            if (nearGoal) saveChance = clamp(saveChance + (18 - shotPower) * .014 + (Math.abs(bp.z) > 4 ? .06 : 0), .12, .78);
+            if (Math.random() < saveChance) { setPossession(p); p.gkHold = .75; S.saves[p.team]++; SND.burst(.1, 500, .35); comment(['سیو فوق‌العاده!', 'واکنش سریع دروازه‌بان!', 'دروازه‌بان نجات داد!']); }
+            else { ball.vel.set(dir * (6 + rnd(4)), 4 + rnd(2), rnd(-4, 4)); S.lastShot = null; }
+            p.state = 'play';
+          }
+          if (p.stateT <= 0) p.state = 'play';
+          return;
+        }
+        moveToward(p, targetX, targetZ, false);
+        p.pos.x = clamp(p.pos.x, minX, maxX);
+        p.pos.z = clamp(p.pos.z, -maxZ, maxZ);
+        p.want.x = clamp(p.want.x, -5.5, 5.5);
+        p.want.z = clamp(p.want.z, -5.5, 5.5);
+      }
+      function gkPunt(p) {
+        var mates = activeOf(p.team).filter(function (q) { return q !== p && !q.isGK; }).sort(function (a, b) { return (b.pos.x - a.pos.x) * S.attackDir[p.team]; });
+        var t = mates[0] || { pos: new THREE.Vector3(S.attackDir[p.team] * 20, 0, 0) };
+        var to = new THREE.Vector3().subVectors(t.pos, p.pos); to.y = 0; to.normalize();
+        kickBall(p, to, 21, 8.5, 0);
+      }
+      function setPossession(p) {
+        S.possession = p; S.lastTouchTeam = p.team; S.lastTouchPlayer = p; p.holdT = 0; ball.curve = 0;
+        if (p && p.active && S.mode === 'match' && S.phase === 'play') {
+          // Auto-switch immediately to whoever gains possession.
+          // Single-player: only the user's home team can be auto-controlled.
+          // Local 2P: the team that gains possession gets its own controller switched.
+          var isHumanTeam = S.local2P ? true : (p.team === 0);
+          if (isHumanTeam) setControlled(p, p.team);
+        }
+      }
+      function doPass(p, dirVec) {
+        var mates = activeOf(p.team).filter(function (q) { return q !== p; }); if (!mates.length) return null;
+        var best = null, bestS = -1e9; var dir = S.attackDir[p.team];
+        for (var i = 0; i < mates.length; i++) {
+          var q = mates[i];
+          var dx = q.pos.x - p.pos.x, dz = q.pos.z - p.pos.z, dd = Math.hypot(dx, dz);
+          if (dd < 3) continue;
+          var fwd = dx * dir, open = nearestOppDist(q);
+          var s = fwd * 1.1 + open * 2.2 - dd * .35 + (q.isGK ? -26 : 0);
+          if (dirVec && (dirVec.x || dirVec.z)) { var n = Math.hypot(dirVec.x, dirVec.z) || 1; var dot = (dx * dirVec.x + dz * dirVec.z) / (dd * n); if (dot < .3) continue; s += dot * 30; }
+          else if (fwd < -10) s -= 18;
+          if (s > bestS) { bestS = s; best = q; }
+        }
+        if (!best) best = mates[0];
+        var tx = clamp(best.pos.x + best.vel.x * .3, -50, 50), tz = clamp(best.pos.z + best.vel.z * .3, -32, 32);
+        if (!p.user) { var e = diffFor(p.team).passErr; tx += rnd(-e, e); tz += rnd(-e, e); }
+        var dx2 = tx - p.pos.x, dz2 = tz - p.pos.z, dd2 = Math.hypot(dx2, dz2) || 1;
+        var T = clamp(dd2 / 24, .3, 1), v0 = Math.min(26, dd2 / T + 3.25 * T);
+        var lift = dd2 > 26 ? 5 : dd2 > 14 ? 1.8 : .5;
+        kickBall(p, new THREE.Vector3(dx2 / dd2, 0, dz2 / dd2), v0, lift, 0);
+        return best;
+      }
+      function doLongPass(p, userDir, charge) {
+        charge = charge || 0;
+        var mates = activeOf(p.team).filter(function (q) { return q !== p && !q.isGK; }); if (!mates.length) return null;
+        var dir = S.attackDir[p.team]; var best = null, bestS = -1e9;
+        for (var i = 0; i < mates.length; i++) {
+          var q = mates[i];
+          var dx = q.pos.x - p.pos.x, dz = q.pos.z - p.pos.z, dd = Math.hypot(dx, dz) || 1;
+          var fwd = dx * dir, open = nearestOppDist(q); var sc = fwd * 1.35 + open * 1.6 + dd * .25;
+          if (userDir && (userDir.x || userDir.z)) { var n = Math.hypot(userDir.x, userDir.z) || 1; var dot = (dx * userDir.x + dz * userDir.z) / (dd * n); if (dot < .05) continue; sc += dot * 34; }
+          if (sc > bestS) { bestS = sc; best = q; }
+        }
+        if (!best) best = mates.sort(function (a, b) { return (b.pos.x - a.pos.x) * dir; })[0];
+        var lead = clamp(.55 + charge * .7, .55, 1.35);
+        var tx = clamp(best.pos.x + best.vel.x * lead * 1.5, -49, 49), tz = clamp(best.pos.z + best.vel.z * lead * 1.5, -31, 31);
+        var dx2 = tx - p.pos.x, dz2 = tz - p.pos.z, dd2 = Math.hypot(dx2, dz2) || 1;
+        var power = 18 + 18 * charge, lift = 7 + 7 * charge;
+        kickBall(p, new THREE.Vector3(dx2 / dd2, 0, dz2 / dd2), power, lift, 0);
+        comment(['پاس بلند دقیق!', 'ارسال بلند به فضای خالی!', 'چه پاس بلندی!'], .18);
+        return best;
+      }
+      function doShoot(p, power, userDir) {
+        var dir = S.attackDir[p.team], gx = dir * 50; var aimZ;
+        if (userDir && userDir.x * dir > .08) { var t = (gx - p.pos.x) / userDir.x; aimZ = p.pos.z + userDir.z * t; }
+        else aimZ = rnd(-2.6, 2.6);
+        if (!p.user) aimZ += rnd(-1, 1) * diffFor(p.team).shotErr * .55;
+        aimZ = clamp(aimZ, -6.5, 6.5);
+        var dx = gx - p.pos.x, dz = aimZ - p.pos.z, dd = Math.hypot(dx, dz) || 1;
+        var vy = 2.2 + rnd(3.4); if (power > 24) vy = Math.max(.9, vy * .55);
+        S.shots[p.team]++;
+        kickBall(p, new THREE.Vector3(dx / dd, 0, dz / dd), power, vy, clamp((aimZ - p.pos.z) * .02, -.9, .9));
+        S.lastShot = { t: performance.now(), team: p.team, power: power };
+        comment(['شوت محکم!', 'ضربه‌ی خطرناک!', 'چه شوتی!'], .2);
+      }
+      function doFoul(pos, byTeam, slide) {
+        S.fouls[byTeam]++; SND.whistle(2);
+        var dir = S.attackDir[byTeam], gx = -dir * 50;
+        var penalty = Math.abs(pos.x - gx) < 16.5 && Math.abs(pos.z) < 20.3;
+        var card = false;
+        if (slide && Math.random() < .35) { card = true; S.cards[byTeam]++; }
+        banner(penalty ? 'پنالتی!' : 'خطا!', card ? 'کارت زرد 🟨' : '', 1600, penalty ? 'goal' : '');
+        comment(['سوت داور به صدا درآمد!', 'خطای تاکتیکی!', 'داور صحنه را نزدیک دید.']);
+        S.freeze = 1.25;
+        S.pending = function () {
+          ball.vel.set(0, 0, 0); ball.curve = 0; S.possession = null;
+          if (penalty) bpos().set(-dir * 39, BALL_R, 0);
+          else bpos().set(clamp(pos.x, -48, 48), BALL_R, clamp(pos.z, -31, 31));
+        };
+      }
+      function userTackle(team, slide) {
+        var c = S.controlled[team]; if (!c || c.state !== 'play') return;
+        if (S.possession === c || c.tackleCd > 0) return;
+
+        var carrier = S.possession;
+        if (carrier && carrier.active && carrier.team !== c.team &&
+          !(carrier.isGK && carrier.gkHold > 0)) {
+
+          // معیار اصلی فاصله از خودِ حامل توپ است؛ این از فاصله‌ی توپ
+          // دقیق‌تر است چون توپ در هنگام مالکیت کمی جلوی بازیکن قرار می‌گیرد.
+          var distance = d2(c, carrier);
+          var ballDistance = d2(c, bpos());
+          var reach = slide ? 3.25 : 3.05;
+
+          if (Math.min(distance, ballDistance) <= reach) {
+            if (slide) { startSlide(c); return; }
+
+            c.tackleCd = .42;
+
+            var facingVec = new THREE.Vector3(Math.sin(c.facing), 0, Math.cos(c.facing));
+            var toCarrier = new THREE.Vector3(carrier.pos.x - c.pos.x, 0, carrier.pos.z - c.pos.z);
+            var toLen = toCarrier.length() || 1;
+            toCarrier.multiplyScalar(1 / toLen);
+            var facingDot = facingVec.dot(toCarrier);
+
+            // توپ‌گیری نزدیک را بسیار قابل‌اعتماد می‌کنیم:
+            // خیلی نزدیک = تقریباً قطعی، فاصله متوسط = همچنان شانس بالا.
+            var proximity = clamp(1 - distance / reach, 0, 1);
+            var facingBonus = clamp((facingDot + 1) * .5, 0, 1);
+            var skillBonus = c.skill * .10;
+            var success = .70 + proximity * .22 + facingBonus * .08 + skillBonus;
+            if (distance < 1.35) success += .06;
+            if (distance > 2.55) success -= .08;
+            success = clamp(success, .78, .985);
+
+            // یک حرکت خیلی کوتاه به سمت حامل، فقط برای اینکه تکل حس "چسبیدن"
+            // و توپ‌گیری روان‌تری داشته باشد و بازیکن مجبور نباشد پیکسل‌به‌پیکسل تنظیم کند.
+            if (distance > 1.45) {
+              var step = Math.min(.38, Math.max(0, (distance - 1.25) * .22));
+              c.pos.x += toCarrier.x * step;
+              c.pos.z += toCarrier.z * step;
+              clampPos(c);
+            }
+
+            if (Math.random() < success) tackleSuccess(c, carrier);
+            else tackleFail(c, carrier, .08);
+          }
+        }
+        // B فقط تکل زمینی/ایستاده است؛ اسلاید با کلید V کیبورد باقی می‌ماند.
+      }
+      function startSlide(p) {
+        if (p.state !== 'play') return;
+        p.state = 'slide'; p.stateT = .48; p.slideHit = false;
+        p.slideDir = new THREE.Vector3(Math.sin(p.facing), 0, Math.cos(p.facing));
+        SND.burst(.09, 400, .2);
+      }
+
+      // ===== TOUCH STEAL / DIRECT BODY CONTACT =====
+      // مالک توپ با برخورد مستقیم بدن بازیکن حریف، همان لحظه توپ را از دست می‌دهد.
+      // این سیستم عمداً داخل resolvePlayerCollisions هم فراخوانی می‌شود تا
+      // قبل از جدا شدن فیزیکی دو بازیکن، تماس واقعی ثبت شود.
+      function touchSteal(carrier, challenger, now) {
+        if (!carrier || !challenger || carrier === challenger) return false;
+        if (!carrier.active || !challenger.active) return false;
+        if (carrier.state !== 'play' || challenger.state !== 'play') return false;
+        if (carrier.team === challenger.team) return false;
+        if (carrier.isGK && carrier.gkHold > 0) return false;
+        if (challenger.stealCdUntil && challenger.stealCdUntil > now) return false;
+        if (carrier.stealLockUntil && carrier.stealLockUntil > now) return false;
+        if (S.contactStealFrame === (window.__frameCounter || 0)) return false;
+
+        // یک تماس فیزیکی واقعی در محدوده مدل بازیکن‌ها.
+        var bodyDist = d2(carrier, challenger);
+        var contactRadius = 1.27;
+        if (bodyDist > contactRadius) return false;
+
+        // فقط یک انتقال مالکیت در هر فریم؛ مانع پینگ‌پنگ شدن توپ می‌شود.
+        S.contactStealFrame = (window.__frameCounter || 0);
+        setPossession(challenger);
+
+        // قفل بسیار کوتاه بعد از توپ‌گیری تا بازیکن بعدی بتواند صاحب جدید توپ را
+        // دوباره در همان لحظه پس نگیرد، اما بلافاصله بعد از آن بازی آزاد است.
+        challenger.stealCdUntil = now + 150;
+        challenger.stealLockUntil = now + 120;
+        carrier.stealCdUntil = now + 240;
+
+        var fx = challenger.pos.x + Math.sin(challenger.facing) * .80;
+        var fz = challenger.pos.z + Math.cos(challenger.facing) * .80;
+        bpos().set(fx, BALL_R, fz);
+        ball.vel.set(challenger.vel.x, 0, challenger.vel.z);
+
+        SND.burst(.055, 520, .22);
+        rumble(.26, 42);
+        comment(['توپ‌گیری!', 'قطع توپ!', 'توپ را گرفت!', 'مالکیت عوض شد!'], .7);
+        return true;
+      }
+
+      // نگه داشته شده برای سازگاری با حلقه‌ی بازی؛ توپ‌گیری اصلی الآن
+      // در همان لحظه‌ی برخورد بازیکن‌ها داخل resolvePlayerCollisions انجام می‌شود.
+      function handleBallScramble(dt) { return; }
+
+      var bannerTimeout = null;
+      function banner(main, sub, ms, cls) {
+        var b = $('banner'); $('bMain').textContent = main; $('bSub').textContent = sub || '';
+        b.className = 'show ' + (cls || '');
+        if (bannerTimeout) clearTimeout(bannerTimeout);
+        bannerTimeout = setTimeout(function () { b.className = ''; }, ms || 1600);
+      }
+      var commentTimeout = null;
+      function comment(txt, chance) {
+        if (Math.random() > (chance === undefined ? .9 : chance)) return;
+        var line = txt[(Math.random() * txt.length) | 0];
+        var el = $('comm'); el.textContent = '🎙 ' + line; el.classList.add('show');
+        if (commentTimeout) clearTimeout(commentTimeout);
+        commentTimeout = setTimeout(function () { el.classList.remove('show'); }, 3600);
+      }
+      function kickoff(team) {
+        recomputeBases();
+        for (var i = 0; i < players.length; i++) {
+          var p = players[i];
+          p.g.visible = p.active;
+          if (!p.active) continue;
+          p.pos.set(p.baseX, 0, p.baseZ); p.g.position.copy(p.pos);
+          p.vel.set(0, 0, 0); p.want.set(0, 0, 0); p.state = 'play'; p.stateT = 0; p.gkHold = 0; p.kickCd = 0; p.tackleCd = 0;
+          p.stamina = clamp(p.stamina + 22, 0, 100);
+          p.facing = S.attackDir[p.team] > 0 ? Math.PI / 2 : -Math.PI / 2;
+          if (p.team === team && p.idx === 9) p.pos.set(-S.attackDir[team] * .9, 0, 0);
+        }
+        bpos().set(0, BALL_R, 0); ball.vel.set(0, 0, 0); ball.curve = 0;
+        S.possession = null;
+        S.chargeState = [{ charging: false, amount: 0, mode: 'shot' }, { charging: false, amount: 0, mode: 'shot' }];
+        S.manualSwitch = [0, 0];
+        var starter0 = players.find(function (p) { return p.active && p.team === 0 && p.idx === 9; }) || nearestField(0, bpos());
+        setControlled(starter0, 0);
+        if (S.local2P) {
+          var starter1 = players.find(function (p) { return p.active && p.team === 1 && p.idx === 9; }) || nearestField(1, bpos());
+          setControlled(starter1, 1);
+        }
+        inputState.x = 0; inputState.z = 0;
+        keys = {}; keyNames = {};
+        SND.whistle(1); S.phase = 'play';
+      }
+      function onGoal(team) {
+        if (S.phase !== 'play') return;
+        S.phase = 'goal'; S.score[team]++;
+        var scorer = S.lastTouchPlayer && S.lastTouchPlayer.team === team ? S.lastTouchPlayer : null;
+        banner('گـــــل!', scorer ? scorer.name + ' ⚽' : '', 2600, 'goal');
+        comment(['چه گل تماشایی!', 'ورودی سهمگین به تور!', 'استادیوم منفجر شد!']);
+        SND.cheer(); SND.whistle(1); rumble(1, 350); S.slowmo = 1.6;
+        for (var i = 0; i < players.length; i++) { var p = players[i]; if (p.active && p.team === team && !p.isGK && d2(p, bpos()) < 16) { p.state = 'celebrate'; p.stateT = 2.3; } }
+        S.freeze = 2.6; S.pending = function () { S.phase = 'play'; kickoff(1 - team); };
+      }
+      function outRestarts() {
+        var bp = bpos();
+        if (Math.abs(bp.z) > 33.8) {
+          var side = Math.sign(bp.z) || 1;
+          var throwTeam = S.lastTouchTeam === 0 ? 1 : 0;
+          SND.whistle(1); S.freeze = .9;
+          S.pending = function () {
+            bp.set(clamp(bp.x, -48.5, 48.5), BALL_R, side * 32.25);
+            ball.vel.set(0, 0, 0); S.possession = null;
+            var takerList = players.filter(function (p) { return p.active && p.team === throwTeam && !p.isGK; })
+              .sort(function (a, b) { return d2(a, bp) - d2(b, bp); });
+            var taker = takerList[0];
+            var isHumanTeam = S.local2P ? true : (throwTeam === 0);
+            if (isHumanTeam && taker) setControlled(taker, throwTeam);
+            banner('OUT', 'اوت دستی برای ' + (TEAMS[S.matchTeams[throwTeam]] ? TEAMS[S.matchTeams[throwTeam]].name : 'تیم'), 1000);
+          };
+          return true;
+        }
+        if (Math.abs(bp.x) > 51.2) {
+          var side2 = Math.sign(bp.x), defTeam = S.attackDir.indexOf(-side2);
+          SND.whistle(1); S.freeze = .9;
+          if (S.lastTouchTeam === defTeam)
+            S.pending = function () { bp.set(side2 * 49.2, BALL_R, Math.sign(bp.z || 1) * 31.4); ball.vel.set(0, 0, 0); S.possession = null; banner('کرنر', '', 900); };
+          else
+            S.pending = function () { bp.set(side2 * 44, BALL_R, 6); ball.vel.set(0, 0, 0); S.possession = null; banner('ضربه دروازه', '', 900); };
+          return true;
+        }
+        return false;
+      }
+      function endMatch() {
+        S.phase = 'full'; SND.whistle(3);
+        if (league.active && league.currentFixture) finishLeagueMatch();
+        $('fullScore').textContent = S.score[0] + ' - ' + S.score[1];
+        var tot = Math.max(1, S.poss[0] + S.poss[1]);
+        var rows = [['شوت‌ها', S.shots[0], S.shots[1]], ['مالکیت ٪', Math.round(S.poss[0] / tot * 100), Math.round(S.poss[1] / tot * 100)], ['خطاها', S.fouls[0], S.fouls[1]], ['کارت‌ها', S.cards[0], S.cards[1]], ['سیو دروازه‌بان', S.saves[0], S.saves[1]]];
+        var html = '';
+        for (var i = 0; i < rows.length; i++) { html += '<tr><td>' + rows[i][1] + '</td><td class="mid">' + rows[i][0] + '</td><td>' + rows[i][2] + '</td></tr>'; }
+        $('statTbl').innerHTML = html;
+        $('fullOv').classList.remove('hidden');
+      }
+      function clampControlledPlayer(p) {
+        if (!p || !p.isGK) return;
+        var dir = S.attackDir[p.team], gx = -dir * 50;
+        var minX = Math.min(gx, gx + dir * 18), maxX = Math.max(gx, gx + dir * 18);
+        p.pos.x = clamp(p.pos.x, minX, maxX);
+        p.pos.z = clamp(p.pos.z, -15.5, 15.5);
+      }
+      function setControlled(p, team) {
+        team = Number.isFinite(team) ? team : 0;
+        if (team !== 0 && !S.local2P) return;
+        if (!p || !p.active || p.team !== team) return;
+        var prev = S.controlled[team];
+        if (prev && prev !== p) prev.user = false;
+        S.controlled[team] = p;
+        for (var i = 0; i < players.length; i++) {
+          var q = players[i];
+          if (q.team === team) q.user = (q === p);
+        }
+        S.switchCd[team] = .45;
+        S.manualSwitch[team] = 1.15;
+      }
+      function clearControlledTeam(team) {
+        for (var i = 0; i < players.length; i++) {
+          if (players[i].team === team) players[i].user = false;
+        }
+        S.controlled[team] = null;
+        S.switchCd[team] = 0;
+        S.manualSwitch[team] = 0;
+      }
+      function ensureControlledPlayers() {
+        if (S.mode !== 'match') return;
+        // Single-player: only Team 1 (home) is human controlled.
+        if (!S.local2P) {
+          if (S.controlled[0] && (!S.controlled[0].active || S.controlled[0].team !== 0)) {
+            clearControlledTeam(0);
+          }
+          clearControlledTeam(1);
+          if (!S.controlled[0]) {
+            var p0 = nearestField(0, bpos());
+            if (p0) setControlled(p0, 0);
+          }
+          return;
+        }
+        // Local 2P: BOTH teams must always have their own controlled player.
+        for (var t = 0; t < 2; t++) {
+          var c = S.controlled[t];
+          if (!c || !c.active || c.team !== t) {
+            var cp = nearestField(t, bpos());
+            if (cp) setControlled(cp, t);
+          }
+        }
+      }
+      function movePlayers(dt) {
+        for (var i = 0; i < players.length; i++) {
+          var p = players[i];
+          if (!p.active) continue;
+          p.kickCd = Math.max(0, p.kickCd - dt); p.tackleCd = Math.max(0, p.tackleCd - dt);
+          if (p.state === 'fall' || p.state === 'celebrate') {
+            p.stateT -= dt; p.vel.multiplyScalar(.8); p.pos.addScaledVector(p.vel, dt);
+            if (p.stateT <= 0) p.state = 'play'; continue;
+          }
+          if (p.state === 'slide') {
+            p.pos.addScaledVector(p.slideDir, 12 * dt); p.stateT -= dt;
+            var c = S.possession;
+            if (!p.slideHit && c && c.active && c.team !== p.team && !(c.isGK && c.gkHold > 0) && d2(p, bpos()) < 2.5) {
+              p.slideHit = true;
+              if (Math.random() < .92) tackleSuccess(p, c);
+              else tackleFail(p, c, .5);
+            }
+            if (p.stateT <= 0) p.state = 'play';
+            clampPos(p); continue;
+          }
+          if (p !== S.controlled[0] && p !== S.controlled[1]) {
+            p.vel.lerp(p.want, 1 - Math.exp(-9 * dt));
+            p.pos.addScaledVector(p.vel, dt);
+          } else {
+            p.vel.set(p.want.x, 0, p.want.z);
+          }
+          var sp = Math.hypot(p.vel.x, p.vel.z);
+          if (sp > .4) p.facing = angLerp(p.facing, Math.atan2(p.vel.x, p.vel.z), 11 * dt);
+          clampPos(p);
+        }
+      }
+      function clampPos(p) {
+        p.pos.x = clamp(p.pos.x, -51.5, 51.5);
+        p.pos.z = clamp(p.pos.z, -33.5, 33.5);
+      }
+      function resolvePlayerCollisions() {
+        var active = players.filter(function (p) { return p.active && p.state === 'play'; });
+        var radius = 0.62;
+        var minDist = radius * 2;
+        for (var i = 0; i < active.length; i++) {
+          var a = active[i];
+          for (var j = i + 1; j < active.length; j++) {
+            var b = active[j];
+            var dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z;
+            var dist = Math.hypot(dx, dz);
+            if (dist < .001) { dx = .001; dz = 0; dist = .001; }
+            if (dist >= minDist) continue;
+
+            // برخورد بین تیم‌ها قبل از جداسازی فیزیکی ثبت می‌شود؛
+            // بنابراین حتی اگر collision solver دو بازیکن را از هم دور کند،
+            // تماس واقعی همان فریم باعث توپ‌گیری خواهد شد.
+            if (S.possession === a && b.team !== a.team) touchSteal(a, b, performance.now());
+            else if (S.possession === b && a.team !== b.team) touchSteal(b, a, performance.now());
+
+            var overlap = (minDist - dist) * .52;
+            var nx = dx / dist, nz = dz / dist;
+            var aMovable = !a.isGK, bMovable = !b.isGK;
+            if (aMovable && bMovable) {
+              a.pos.x -= nx * overlap; a.pos.z -= nz * overlap;
+              b.pos.x += nx * overlap; b.pos.z += nz * overlap;
+            } else if (aMovable) {
+              a.pos.x -= nx * overlap * 2; a.pos.z -= nz * overlap * 2;
+            } else if (bMovable) {
+              b.pos.x += nx * overlap * 2; b.pos.z += nz * overlap * 2;
+            }
+            var relx = b.vel.x - a.vel.x, relz = b.vel.z - a.vel.z;
+            var rel = relx * nx + relz * nz;
+            if (rel < 0) {
+              var push = rel * .48;
+              a.vel.x += nx * push; a.vel.z += nz * push;
+              b.vel.x -= nx * push; b.vel.z -= nz * push;
+            }
+            clampPos(a); clampPos(b);
+          }
+        }
+      }
+      function updateBall(dt) {
+        var m = bpos();
+        if (S.possession && S.possession.active) {
+          var p = S.possession;
+          if (p.isGK && p.gkHold > 0) m.set(p.pos.x + Math.sin(p.facing) * .5, 1.15, p.pos.z + Math.cos(p.facing) * .5);
+          else {
+            var tx = p.pos.x + Math.sin(p.facing) * .8, tz = p.pos.z + Math.cos(p.facing) * .8;
+            m.x += (tx - m.x) * Math.min(1, dt * 14); m.z += (tz - m.z) * Math.min(1, dt * 14); m.y = BALL_R;
+          }
+          ball.vel.set(p.vel.x, 0, p.vel.z); return;
+        }
+        ball.vel.y -= 23 * dt;
+        var sp = Math.hypot(ball.vel.x, ball.vel.z);
+        if (sp > .01 && ball.curve !== 0) {
+          var f = ball.curve * Math.min(sp, 20) * dt * 1.6;
+          ball.vel.x += (-ball.vel.z / sp) * f; ball.vel.z += (ball.vel.x / sp) * f;
+          ball.curve *= Math.max(0, 1 - 1.4 * dt);
+        }
+        var dr = Math.max(0, 1 - .14 * dt); ball.vel.x *= dr; ball.vel.z *= dr;
+        m.x += ball.vel.x * dt; m.y += ball.vel.y * dt; m.z += ball.vel.z * dt;
+        if (m.y < BALL_R) {
+          m.y = BALL_R;
+          if (ball.vel.y < -2) { ball.vel.y *= -.48; SND.bounce(Math.min(1, -ball.vel.y / 12)); }
+          else ball.vel.y = 0;
+          var f2 = Math.max(0, 1 - 3.1 * dt); ball.vel.x *= f2; ball.vel.z *= f2;
+        }
+        ball.mesh.rotation.x += ball.vel.z * dt / BALL_R; ball.mesh.rotation.z -= ball.vel.x * dt / BALL_R;
+        var gposts = [-50, 50];
+        for (var gi = 0; gi < gposts.length; gi++) {
+          var gx = gposts[gi];
+          var zposts = [-3.66, 3.66];
+          for (var zi = 0; zi < zposts.length; zi++) {
+            var zp = zposts[zi];
+            var dx = m.x - gx, dz = m.z - zp, dd = Math.hypot(dx, dz);
+            if (dd < .42 && m.y < 2.6 && dd > .001) {
+              var nx = dx / dd, nz = dz / dd, dot = ball.vel.x * nx + ball.vel.z * nz;
+              if (dot < 0) { ball.vel.x -= 2 * dot * nx; ball.vel.z -= 2 * dot * nz; ball.vel.multiplyScalar(.65); }
+              m.x = gx + nx * .42; m.z = zp + nz * .42; SND.post(); rumble(.4, 60);
+            }
+          }
+        }
+        if (Math.abs(m.x) > 49.55 && Math.abs(m.x) < 50.55 && Math.abs(m.z) < 3.7 && m.y > 2.02 && m.y < 2.8 && Math.abs(ball.vel.x) > 4) {
+          ball.vel.y *= -.5; ball.vel.x *= -.35; SND.post();
+        }
+        if (Math.abs(m.x) > 50 && Math.abs(m.z) < 3.6 && m.y < 2.42) { onGoal(S.attackDir.indexOf(m.x > 0 ? 1 : -1)); return; }
+        if (S.phase === 'play' && S.freeze <= 0 && outRestarts()) return;
+        if (!S.possession) {
+          var best = null, bd = 1e9;
+          for (var i = 0; i < players.length; i++) {
+            var p2 = players[i];
+            if (!p2.active || p2.state === 'fall' || p2.state === 'slide') continue;
+            if (p2 === S.lastTouchPlayer && p2.kickCd > 0) continue;
+            var dx2 = m.x - p2.pos.x, dz2 = m.z - p2.pos.z;
+            var dd2 = Math.hypot(dx2, dz2);
+            var dy = Math.abs(m.y - (p2.pos.y + BALL_R));
+            var r = p2.isGK ? 2.45 : 2.05;
+            if (dy < 2.1 && dd2 < r && dd2 < bd) { bd = dd2; best = p2; }
+          }
+          if (best) {
+            setPossession(best);
+            var fx = best.pos.x + Math.sin(best.facing) * .78;
+            var fz = best.pos.z + Math.cos(best.facing) * .78;
+            m.set(fx, BALL_R, fz);
+            ball.vel.set(best.vel.x, 0, best.vel.z);
+            if (best.team === 0 || S.local2P) rumble(.22, 55);
+          }
+        }
+      }
+      function processTeamInput(team, dt) {
+        if (team !== 0 && !S.local2P) return;
+        var c = S.controlled[team];
+        if (!c || !c.active || c.team !== team) { setControlled(nearestField(team, bpos()), team); return; }
+        var mv, sprint, passEdge, tackleEdge, shootHeld, longHeld, swEdge, gkEdge;
+        var useTouch = teamUsesTouch(team);
+        var padSlot = teamPadSlot(team);
+        if (team === 0) {
+          mv = getMoveInput(useTouch);
+          sprint = (useTouch ? false : (padSlot >= 0 ? gpSprintHeld(padSlot) : sprintHeld())) || (useTouch && TOUCH.sprint);
+          passEdge = (useTouch ? K.pass : (padSlot >= 0 ? gpPassEdge(padSlot) : K.pass));
+          tackleEdge = (useTouch ? K.slide : (padSlot >= 0 ? gpTackleEdge(padSlot) : K.slide));
+          shootHeld = keys['KeyC'] || keys['KeyZ'] || keyNames['c'] || keyNames['z'] || (useTouch && TOUCH.holdShot) || (padSlot >= 0 && !useTouch && gpShootHeld(padSlot));
+          longHeld = keys['KeyY'] || keyNames['y'] || (useTouch && TOUCH.holdLong) || (padSlot >= 0 && !useTouch && gpLongHeld(padSlot));
+          swEdge = useTouch ? K.sw : (padSlot >= 0 ? gpSwitchEdge(padSlot) : K.sw);
+          gkEdge = useTouch ? K.gk : (padSlot >= 0 ? gpGKSwitchEdge(padSlot) : K.gk);
+        } else {
+          if (padSlot < 0) return;
+          mv = getPadMoveInput(padSlot);
+          sprint = gpSprintHeld(padSlot);
+          passEdge = gpPassEdge(padSlot);
+          tackleEdge = gpTackleEdge(padSlot);
+          shootHeld = gpShootHeld(padSlot);
+          longHeld = gpLongHeld(padSlot);
+          swEdge = gpSwitchEdge(padSlot);
+          gkEdge = gpGKSwitchEdge(padSlot);
+        }
+        if (gkEdge && !c.isGK) {
+          var ownGK = activeOf(team).find(function (q) { return q.isGK; });
+          if (ownGK) {
+            setControlled(ownGK, team);
+            c = ownGK;
+            toast('🧤 کنترل دروازه‌بان فعال شد');
+          }
+        }
+        var has = S.possession === c;
+        var cs = S.chargeState[team];
+        S.switchCd[team] = Math.max(0, S.switchCd[team] - dt); S.manualSwitch[team] = Math.max(0, S.manualSwitch[team] - dt);
+        var isSprinting = sprint && !cs.charging && c.stamina > 1 && !c.sprintLock;
+        if (isSprinting && mv.mag > .15) c.stamina = Math.max(0, c.stamina - dt * (12 + 8 * mv.mag));
+        else c.stamina = Math.min(100, c.stamina + dt * (4.5 + (has ? 1.0 : 0)));
+        if (c.stamina <= 0) c.sprintLock = true; if (c.stamina > 24) c.sprintLock = false;
+        if (c.state === 'play') {
+          var base = 6.6 * (.94 + c.skill * .18);
+          var speed = base * mv.mag * (isSprinting ? 1.46 : 1) * (cs.charging ? .55 : 1) * (c.stamina < 20 ? .82 : 1);
+          c.want.set(mv.x * speed, 0, mv.z * speed);
+          c.vel.set(c.want.x, 0, c.want.z);
+          if (mv.mag > .05) {
+            c.pos.x += mv.x * speed * dt;
+            c.pos.z += mv.z * speed * dt;
+            c.facing = angLerp(c.facing, Math.atan2(mv.x, mv.z), Math.min(1, 24 * dt));
+            if (c.isGK) clampControlledPlayer(c); else clampPos(c);
+          }
+        } else { c.want.set(0, 0, 0); c.vel.set(0, 0, 0); }
+        var actionHeld = shootHeld || longHeld;
+        if (actionHeld && !cs.charging && has) { cs.charging = true; cs.amount = 0; cs.mode = longHeld ? 'long' : 'shot'; }
+        if (cs.charging) {
+          if (!has) { cs.charging = false; cs.amount = 0; cs.mode = 'shot'; }
+          else if (actionHeld) { cs.amount = Math.min(1, cs.amount + dt * (longHeld ? 1.05 : 1.25)); cs.mode = longHeld ? 'long' : 'shot'; }
+          else { if (cs.mode === 'long') doLongPass(c, mv, cs.amount); else doShoot(c, 15 + 15 * cs.amount, mv); cs.charging = false; cs.amount = 0; }
+        }
+        if (passEdge && has) {
+          var r = doPass(c, mv);
+          if (r) setControlled(r, team);
+        }
+        if (tackleEdge) userTackle(team, false);
+        if (swEdge) {
+          // Distance-ordered player switching:
+          // 1) nearest teammate to the ball
+          // 2) next closest
+          // 3) next one farther away ...
+          // No artificial radius/5-player limit. Every eligible outfield teammate can be selected.
+          var bpSwitch = bpos();
+          var pvx = ball.vel.x * .18, pvz = ball.vel.z * .18;
+          var targetX = clamp(bpSwitch.x + pvx, -51, 51);
+          var targetZ = clamp(bpSwitch.z + pvz, -33, 33);
+          var ordered = activeOf(team).filter(function (q) {
+            return !q.isGK && q.active && q.state === 'play';
+          });
+          ordered.sort(function (a, b) {
+            var da = Math.hypot(a.pos.x - targetX, a.pos.z - targetZ);
+            var db = Math.hypot(b.pos.x - targetX, b.pos.z - targetZ);
+            if (Math.abs(da - db) > .001) return da - db;
+            return a.idx - b.idx;
+          });
+
+          if (ordered.length) {
+            var ci = ordered.indexOf(c);
+            // If current player is not in the ordered list, begin from the closest.
+            if (ci < 0) ci = (team === 0 && K.sw === -1) ? 0 : -1;
+            var step = (team === 0 && K.sw === -1) ? -1 : 1;
+            var nextIndex;
+            if (ci < 0) nextIndex = 0;
+            else nextIndex = (ci + step + ordered.length) % ordered.length;
+            var n = ordered[nextIndex];
+            if (n) setControlled(n, team);
+          }
+        }
+      }
+      function handleUser(dt) {
+        if (S.paused || S.mode !== 'match') return;
+        var teamsToControl = S.local2P ? [0, 1] : [0];
+        for (var i = 0; i < teamsToControl.length; i++) { processTeamInput(teamsToControl[i], dt); }
+        K.pass = false; K.slide = false; K.sw = 0; K.long = false; K.gk = false;
+      }
+      function animatePlayers(dt) {
+        for (var i = 0; i < players.length; i++) {
+          var p = players[i];
+          if (!p.active) { p.g.visible = false; continue; }
+          var g = p.g; g.position.copy(p.pos); g.rotation.set(0, p.facing, 0); g.rotation.order = 'YXZ';
+          var P = p.parts, sp = Math.hypot(p.vel.x, p.vel.z);
+          if (p.state === 'slide') {
+            g.rotation.x = -1.15; g.position.y = .28;
+            P.legL.rotation.x = -.5; P.legR.rotation.x = .15; P.armL.rotation.x = -.9; P.armR.rotation.x = -.9; continue;
+          }
+          if (p.state === 'fall') {
+            g.rotation.x = -Math.PI / 2; g.position.y = .25;
+            P.armL.rotation.x = -.5; P.armR.rotation.x = -.5; P.legL.rotation.x = 0; P.legR.rotation.x = 0; continue;
+          }
+          if (p.state === 'dive') {
+            g.rotation.x = -1.2; g.position.y = .6;
+            P.armL.rotation.x = -2.6; P.armR.rotation.x = -2.6; P.legL.rotation.x = .3; P.legR.rotation.x = .3; continue;
+          }
+          if (p.state === 'celebrate') {
+            g.position.y = Math.abs(Math.sin(performance.now() * .012)) * 0.35;
+            P.armL.rotation.x = -2.9; P.armR.rotation.x = -2.9; continue;
+          }
+          var amp = clamp(sp / 7.5, 0, 1);
+          p.phase += sp * dt * 2.2;
+          P.legL.rotation.x = Math.sin(p.phase) * amp * .95; P.legR.rotation.x = -Math.sin(p.phase) * amp * .95;
+          P.armL.rotation.x = -Math.sin(p.phase) * amp * .75; P.armR.rotation.x = Math.sin(p.phase) * amp * .75;
+          g.rotation.x = amp * .1; g.position.y = Math.abs(Math.sin(p.phase)) * amp * .06;
+        }
+      }
+      function updateCamera(dt) {
+        if (S.mode === 'menu') {
+          var a = performance.now() * .00006;
+          camPos.lerp(new THREE.Vector3(Math.cos(a) * 72, 24, Math.sin(a) * 72), Math.min(1, dt * 2));
+          camLook.lerp(new THREE.Vector3(0, 2, 0), Math.min(1, dt * 2));
+          camera.position.copy(camPos); camera.lookAt(camLook); return;
+        }
+        if (S.slowmo > 0) {
+          var a2 = performance.now() * .0009;
+          camPos.lerp(new THREE.Vector3(bpos().x + Math.cos(a2) * 9, 2.4, bpos().z + Math.sin(a2) * 9), Math.min(1, dt * 3));
+          camLook.lerp(new THREE.Vector3(bpos().x, 1.2, bpos().z), Math.min(1, dt * 3));
+          camera.position.copy(camPos); camera.lookAt(camLook); return;
+        }
+        var bp = bpos();
+        var mainCtrl = S.local2P ? null : S.controlled[0];
+        if (mainCtrl && S.mode === 'match' && S.slowmo <= 0) {
+          var cp = mainCtrl.pos;
+          var t = new THREE.Vector3(clamp(cp.x * .82, -40, 40), 25, 36 + cp.z * .15);
+          var look = new THREE.Vector3(cp.x * .92, 0, cp.z * .5);
+          camPos.lerp(t, Math.min(1, dt * 4)); camLook.lerp(look, Math.min(1, dt * 5));
+          camera.position.copy(camPos); camera.lookAt(camLook); return;
+        }
+        var t2, look2;
+        if (S.settings.camera === 1) { t2 = new THREE.Vector3(clamp(bp.x * .9, -44, 44), 34, 48); look2 = new THREE.Vector3(bp.x * .9, 0, bp.z * .5); }
+        else if (S.settings.camera === 2) { t2 = new THREE.Vector3(bp.x * .6, 55, bp.z * .4 + 9); look2 = new THREE.Vector3(bp.x, 0, bp.z); }
+        else { t2 = new THREE.Vector3(clamp(bp.x * .82, -40, 40), 25, 36 + bp.z * .15); look2 = new THREE.Vector3(bp.x * .92, 0, bp.z * .5); }
+        camPos.lerp(t2, Math.min(1, dt * 4)); camLook.lerp(look2, Math.min(1, dt * 5));
+        camera.position.copy(camPos); camera.lookAt(camLook);
+      }
+      var radarCtx = $('radar').getContext('2d');
+      function drawRadar() {
+        var w = 220, h = 136, c = radarCtx;
+        c.clearRect(0, 0, w, h);
+        c.fillStyle = 'rgba(9,30,16,.9)'; c.fillRect(0, 0, w, h);
+        c.strokeStyle = '#2c6b45'; c.lineWidth = 1.5;
+        function X(x) { return 8 + (x + 52) / 104 * (w - 16); }
+        function Z(z) { return 8 + (z + 34) / 68 * (h - 16); }
+        c.strokeRect(X(-50), Z(-32), X(50) - X(-50), Z(32) - Z(-32));
+        c.beginPath(); c.moveTo(X(0), Z(-32)); c.lineTo(X(0), Z(32)); c.stroke();
+        for (var i = 0; i < players.length; i++) {
+          var p = players[i];
+          if (!p.active) continue;
+          c.fillStyle = p.isGK ? (p.team === 0 ? '#ffc94a' : '#2fe0a0') : (p.team === 0 ? '#4d94ff' : '#ff5d63');
+          c.beginPath(); c.arc(X(p.pos.x), Z(p.pos.z), p.isGK ? 3.4 : 2.8, 0, 7); c.fill();
+          if (p === S.controlled[0] || p === S.controlled[1]) {
+            c.strokeStyle = p === S.controlled[0] ? '#c6f24e' : '#ff9d2b'; c.lineWidth = 1.6;
+            c.beginPath(); c.arc(X(p.pos.x), Z(p.pos.z), 5, 0, 7); c.stroke();
+          }
+        }
+        c.fillStyle = '#fff'; c.beginPath(); c.arc(X(bpos().x), Z(bpos().z), 2.4, 0, 7); c.fill();
+      }
+      function updateHUD() {
+        $('clock').textContent = String(Math.min(90, Math.floor(S.clock))).padStart(2, '0') + "'";
+        $('scH').textContent = S.score[0]; $('scA').textContent = S.score[1];
+        $('halfTag').textContent = 'نیمه ' + S.half;
+        var mainCtrl = S.local2P ? (S.possession ? S.controlled[S.possession.team] : S.controlled[0]) : S.controlled[0];
+        $('stamFill').style.width = (mainCtrl ? mainCtrl.stamina : 0) + '%';
+        var chargingTeam = -1;
+        for (var i = 0; i < S.chargeState.length; i++) { if (S.chargeState[i].charging) { chargingTeam = i; break; } }
+        $('chargeWrap').classList.toggle('hidden', chargingTeam === -1);
+        if (chargingTeam !== -1) {
+          $('chargeFill').style.width = (S.chargeState[chargingTeam].amount * 100) + '%';
+          $('chargeLabel').textContent = S.chargeState[chargingTeam].mode === 'long' ? 'قدرت پاس بلند' : 'قدرت شوت';
+        }
+        drawRadar();
+        for (var j = 0; j < 2; j++) {
+          var ctrl = S.controlled[j];
+          var ind = indicators[j];
+          if (!ind) continue;
+          if (ctrl && S.mode === 'match' && (j === 0 || S.local2P)) {
+            ind.ring.visible = true; ind.arrow.visible = true;
+            ind.ring.position.set(ctrl.pos.x, .06, ctrl.pos.z);
+            ind.arrow.position.set(ctrl.pos.x, 2.7 + Math.sin(performance.now() * .005 + j) * .12, ctrl.pos.z);
+          } else {
+            ind.ring.visible = false; ind.arrow.visible = false;
+          }
+        }
+      }
+
+      /* ===== Gameplay 2.0 advanced systems ===== */
+      var ADV = {
+        preset: (function(){ try { return localStorage.getItem('gm_gameplay_preset') || 'authentic'; } catch(e){ return 'authentic'; } })(),
+        weather: (function(){ try { return localStorage.getItem('gm_weather') || 'clear'; } catch(e){ return 'clear'; } })(),
+        skillCd: 0, toastT: 0, weatherClock: 0, particles: null,
+        stats: { shots:[0,0], passes:[0,0], tackles:[0,0], dribbles:[0,0] }
+      };
+      var ADV_WEATHER = {
+        clear:{label:'☀ Clear', drag:1}, rain:{label:'🌧 Rain', drag:.94}, storm:{label:'⛈ Storm', drag:.90}, snow:{label:'❄ Snow', drag:.88}
+      };
+      function advSave(){ try{ localStorage.setItem('gm_gameplay_preset',ADV.preset); localStorage.setItem('gm_weather',ADV.weather); }catch(e){} }
+      function advPresetLabel(){ return ADV.preset === 'competitive' ? 'COMPETITIVE GAMEPLAY' : 'AUTHENTIC GAMEPLAY'; }
+      function advPresetScale(){ return ADV.preset === 'competitive' ? {speed:1.045,turn:1.18,pass:1.10,control:1.15,ai:.96} : {speed:.985,turn:1.04,pass:.99,control:1.0,ai:1.04}; }
+      function advEnsurePlayer(p){
+        if (p.adv) return p.adv;
+        var seed = (p.idx * 17 + p.team * 31) % 11;
+        var roleBoost = p.role === 'FW' ? 7 : p.role === 'MF' ? 4 : p.role === 'DF' ? 1 : -2;
+        p.adv = {
+          pace:clamp(70+seed*2.2+roleBoost+(TEAMS[S.matchTeams[p.team]]?TEAMS[S.matchTeams[p.team]].power-1:0)*55,58,96),
+          dribble:clamp(65+((seed*7)%23)+roleBoost,52,94),
+          pass:clamp(64+((seed*9)%24)+(p.role==='MF'?6:0),50,95),
+          shot:clamp(58+((seed*11)%28)+(p.role==='FW'?8:0),45,96),
+          defend:clamp(58+((seed*5)%30)+(p.role==='DF'?10:0),45,96),
+          phy:clamp(62+((seed*13)%25)+(p.role==='DF'?8:0),50,96),
+          firstTouch:clamp(60+((seed*8)%30),50,95),
+          accel:clamp(68+((seed*6)%25)+roleBoost,55,96),
+          composure:clamp(60+((seed*10)%26),48,95),
+          lastSkill:0
+        };
+        return p.adv;
+      }
+      function advToast(msg){ var el=$('advToast'); if(!el)return; el.textContent=msg; el.classList.add('show'); clearTimeout(ADV.toastT); ADV.toastT=setTimeout(function(){el.classList.remove('show');},1300); }
+      function advApplyWeather(){
+        ADV.weatherClock=0;
+        if (ADV.particles) { try { scene.remove(ADV.particles); }catch(e){} ADV.particles=null; }
+        if (ADV.weather==='clear') return;
+        var count=ADV.weather==='rain'?900:520, geo=new THREE.BufferGeometry(), pos=new Float32Array(count*3);
+        for(var i=0;i<count;i++){ pos[i*3]=rnd(-95,95); pos[i*3+1]=rnd(8,48); pos[i*3+2]=rnd(-72,72); }
+        geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+        var mat=new THREE.PointsMaterial({color:ADV.weather==='snow'?0xf4f7ff:0xbdd8ff,size:ADV.weather==='snow'?.16:.075,transparent:true,opacity:ADV.weather==='snow'?.82:.42,depthWrite:false});
+        ADV.particles=new THREE.Points(geo,mat); scene.add(ADV.particles);
+      }
+      function advWeatherTick(dt){
+        if(!ADV.particles)return; ADV.weatherClock+=dt;
+        var a=ADV.particles.geometry.attributes.position.array;
+        var snow=ADV.weather==='snow';
+        for(var i=0;i<a.length;i+=3){
+          a[i] += Math.sin((i/3)*.7+ADV.weatherClock*2)*dt*(snow?.45:.7);
+          a[i+1] -= dt*(snow?2.6:18);
+          a[i+2] += dt*(snow?.5:1.3);
+          if(a[i+1]<1){a[i+1]=rnd(25,50);a[i]=rnd(-95,95);a[i+2]=rnd(-72,72);}
+        }
+        ADV.particles.geometry.attributes.position.needsUpdate=true;
+      }
+      function advSkillFlick(team){
+        if (ADV.skillCd>0 || S.paused || S.mode!=='match') return;
+        var c=S.controlled[team]; if(!c||!c.active||S.possession!==c) return;
+        var ax=GP[team].raxes.x, ay=GP[team].raxes.y, mag=Math.hypot(ax,ay); if(mag<.88)return;
+        var a=advEnsurePlayer(c); var now=performance.now(); if(now-a.lastSkill<420)return; a.lastSkill=now;
+        var dirx=ax, dirz=ay; var facing=Math.atan2(c.pos.x, c.pos.z); var desired=Math.atan2(dirx,dirz); var rel=angDiff(facing,desired);
+        var side=Math.sign(Math.sin(rel)||1), boost=ADV.preset==='competitive'?4.4:3.6;
+        if(a.dribble<68)boost*=.84;
+        c.pos.x += Math.sin(desired)*boost*.18; c.pos.z += Math.cos(desired)*boost*.18; clampPos(c);
+        c.facing=angLerp(c.facing,desired,.75); c.holdT=Math.max(0,c.holdT-.25); ADV.skillCd=.25; ADV.stats.dribbles[team]++;
+        ball.vel.set(Math.sin(desired)*2.5,0,Math.cos(desired)*2.5);
+        advToast(side>0?'◀ Skill Move':'Skill Move ▶'); rumble(.26,70);
+      }
+      function advContactModel(dt){
+        var preset=advPresetScale();
+        for(var i=0;i<players.length;i++){
+          var p=players[i]; if(!p.active)continue; var st=advEnsurePlayer(p);
+          if(p.state!=='play')continue;
+          var fatigue=clamp(1-(100-p.stamina)*.0045,.70,1);
+          var sp=Math.hypot(p.vel.x,p.vel.z);
+          if(S.possession===p){
+            var pressure=nearestOppDist(p); var control=clamp(st.dribble/100 * preset.control * fatigue,.46,1.18);
+            var touch=.72 + sp*.075 + (pressure<5 ? (5-pressure)*.035 : 0);
+            touch/=control; touch=clamp(touch,.62,1.28);
+            var tx=p.pos.x+Math.sin(p.facing)*touch, tz=p.pos.z+Math.cos(p.facing)*touch;
+            var m=bpos(); m.x=lerp(m.x,tx,Math.min(1,dt*(ADV.preset==='competitive'?19:15))); m.z=lerp(m.z,tz,Math.min(1,dt*(ADV.preset==='competitive'?19:15))); m.y=BALL_R;
+            if(sp>7.2 || pressure<1.6){
+              var oppDist=nearestOppDist(p);
+              if(oppDist<1.35 && Math.random()<dt*(ADV.preset==='competitive'?.55:.75)){
+                S.possession=null; ball.vel.set(Math.sin(p.facing)*(1.2+(pressure<1?1:0)),.3,Math.cos(p.facing)*(1.2+(pressure<1?1:0))); comment(['برخورد نزدیک!','کنترل سخت شد!'],.12);
+              }
+            }
+          }
+          if(p.stamina<18 && p.state==='play') p.vel.multiplyScalar(.985);
+          if(S.possession===p && p.stamina<12) p.vel.multiplyScalar(.97);
+        }
+      }
+      function advHUD(){
+        var c = S.local2P ? (S.possession ? S.controlled[S.possession.team] : S.controlled[0]) : S.controlled[0];
+        if(c&&c.active){
+          var a=advEnsurePlayer(c);
+          $('advPlayerName').textContent=(S.local2P ? (c.team===0?'P1 · ':'P2 · ') : '')+(c.name||'—');
+          $('advPlayerRole').textContent=c.role+(c.isGK?' · GK':'');
+          $('advPac').style.width=a.pace+'%';
+          $('advDri').style.width=a.dribble+'%';
+          $('advPas').style.width=a.pass+'%';
+          $('advPhy').style.width=a.phy+'%';
+        }
+      }
+      function advInitSettings(){
+        var pb=$('advPresetBtns'), wb=$('advWeatherBtns'); if(!pb||!wb)return; pb.innerHTML=''; wb.innerHTML='';
+        [['authentic','Authentic'],['competitive','Competitive']].forEach(function(v){var b=document.createElement('button');b.className='advChoice'+(ADV.preset===v[0]?' on':'');b.textContent=v[1];b.onclick=function(){ADV.preset=v[0];advSave();advInitSettings();advToast(v[0]==='authentic'?'⚽ Authentic فعال شد':'⚡ Competitive فعال شد');};pb.appendChild(b);});
+        ['clear','rain','storm','snow'].forEach(function(v){var b=document.createElement('button');b.className='advChoice'+(ADV.weather===v?' on':'');b.textContent=ADV_WEATHER[v].label;b.onclick=function(){ADV.weather=v;advSave();advApplyWeather();advInitSettings();advToast('آب‌وهوا: '+ADV_WEATHER[v].label);};wb.appendChild(b);});
+      }
+      function advanceGameplay2(dt){
+        ADV.skillCd=Math.max(0,ADV.skillCd-dt);
+        advWeatherTick(dt);
+        advContactModel(dt);
+        advHUD();
+        advSkillFlick(0);
+        if(S.local2P) advSkillFlick(1);
+      }
+      advInitSettings(); advApplyWeather();
+
+
+      /* ===== Touch Controller ===== */
+      var TOUCH = { enabled:false, joyId:null, joyCenterX:0, joyCenterY:0, moveX:0, moveZ:0, sprint:false, holdShot:false, holdLong:false };
+      function touchDeviceDetected(){ return ('ontouchstart' in window) || (navigator.maxTouchPoints||0) > 0 || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches); }
+      function setTouchBtn(id,on){ var el=$(id); if(el) el.classList.toggle('on',!!on); }
+      function clearTouchState(){ TOUCH.joyId=null; TOUCH.moveX=0; TOUCH.moveZ=0; TOUCH.sprint=false; TOUCH.holdShot=false; TOUCH.holdLong=false; K.pass=false; K.slide=false; K.long=false; K.gk=false; K.sw=0; inputState.x=0; inputState.z=0; setTouchBtn('touchA',false); setTouchBtn('touchB',false); setTouchBtn('touchX',false); setTouchBtn('touchY',false); setTouchBtn('touchSwitch',false); setTouchBtn('touchSprint',false); setTouchBtn('touchLT',false); if($('touchJoyKnob')) $('touchJoyKnob').style.transform='translate(0px,0px)'; }
+      function touchAction(btn){
+        if(S.mode!=='match' || S.paused || !S.local2P){
+          if(btn==='pass') K.pass=true;
+          else if(btn==='tackle') K.slide=true;
+          else if(btn==='long') K.long=true;
+          else if(btn==='switch') K.sw=1;
+          return;
+        }
+      }
+      function touchPress(id, key){
+        var el=$(id); if(!el) return;
+        function set(on){
+          setTouchBtn(id,on);
+          if(key==='sprint') TOUCH.sprint=on;
+          else if(key==='long') TOUCH.holdLong=on;
+          else if(key==='shotHeld') TOUCH.holdShot=on;
+          else if(key==='gk') K.gk=on;
+        }
+        el.addEventListener('pointerdown',function(e){ if(e.button!==undefined && e.button>0)return; e.preventDefault(); try{el.setPointerCapture(e.pointerId);}catch(err){} set(true); },{passive:false});
+        el.addEventListener('pointerup',function(e){ e.preventDefault(); set(false); },{passive:false});
+        el.addEventListener('pointercancel',function(){ set(false); },{passive:false});
+        el.addEventListener('lostpointercapture',function(){ set(false); });
+      }
+      function touchTap(id, action){
+        var el=$(id); if(!el)return;
+        el.addEventListener('pointerdown',function(e){ if(e.button!==undefined && e.button>0)return; e.preventDefault(); setTouchBtn(id,true); if(action==='pass') K.pass=true; else if(action==='tackle') K.slide=true; else if(action==='switch') K.sw=1; setTimeout(function(){setTouchBtn(id,false);},110); },{passive:false});
+      }
+      function initTouchController(){
+        // Touch controls are intentionally enabled on desktop too, so the virtual
+        // controller is visible during PC testing and can be operated with a mouse.
+        TOUCH.enabled = S.settings.touchEnabled !== false; document.body.classList.add('touchDevice');
+        var joy=$('touchJoy'), knob=$('touchJoyKnob');
+        if(joy){
+          function updateJoy(e){
+            var r=joy.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+            var dx=e.clientX-cx, dy=e.clientY-cy; var max=Math.max(24,r.width*.34); var mag=Math.hypot(dx,dy);
+            if(mag>max){dx=dx/mag*max;dy=dy/mag*max;}
+            TOUCH.moveX=clamp(dx/max,-1,1); TOUCH.moveZ=clamp(dy/max,-1,1);
+            if(knob) knob.style.transform='translate('+dx+'px,'+dy+'px)';
+          }
+          joy.addEventListener('pointerdown',function(e){
+            if(S.mode!=='match'||S.paused||e.button>0){return;}
+            e.preventDefault(); TOUCH.joyId=e.pointerId;
+            try{joy.setPointerCapture(e.pointerId);}catch(err){}
+            updateJoy(e);
+          },{passive:false});
+          joy.addEventListener('pointermove',function(e){ if(e.pointerId!==TOUCH.joyId)return; e.preventDefault(); updateJoy(e); },{passive:false});
+          function endJoy(e){
+            if(e.pointerId!==TOUCH.joyId)return; TOUCH.joyId=null; TOUCH.moveX=0; TOUCH.moveZ=0;
+            if(knob) knob.style.transform='translate(0px,0px)';
+          }
+          joy.addEventListener('pointerup',endJoy,{passive:false}); joy.addEventListener('pointercancel',endJoy,{passive:false});
+        }
+        touchTap('touchA','pass'); touchTap('touchB','tackle'); touchTap('touchSwitch','switch');
+        touchPress('touchY','long'); touchPress('touchX','shotHeld'); touchPress('touchSprint','sprint'); touchPress('touchLT','gk');
+        window.addEventListener('pointerup',function(){ if (TOUCH.joyId !== null || TOUCH.sprint || TOUCH.holdShot || TOUCH.holdLong) { TOUCH.joyId=null; TOUCH.moveX=0; TOUCH.moveZ=0; TOUCH.sprint=false; TOUCH.holdShot=false; TOUCH.holdLong=false; setTouchBtn('touchX',false); setTouchBtn('touchY',false); setTouchBtn('touchSprint',false); if($('touchJoyKnob')) $('touchJoyKnob').style.transform='translate(0px,0px)'; } }, true);
+        window.addEventListener('blur',clearTouchState);
+      }
+      initTouchController();
+
+      var lastT = performance.now();
+      function loop() {
+        requestAnimationFrame(loop);
+        var now = performance.now(), rdt = Math.min(.05, (now - lastT) / 1000); lastT = now;
+        window.__frameCounter = (window.__frameCounter || 0) + 1;
+        pollGamepad();
+        refreshControlMode(false);
+        if (teamUsesTouch(0)) { $('touchPad').style.display = (S.mode === 'match' && !S.paused) ? 'block' : 'none'; } else { $('touchPad').style.display = 'none'; }
+        // Hard invariant: Single Player = exactly one controlled player;
+        // Local 2P = exactly one controlled player for EACH team.
+        ensureControlledPlayers();
+        menuGamepadTick(); SND.update(rdt);
+        if (GP[0].edge[PAD.START] || GP[1].edge[PAD.START]) { if (S.mode === 'match' && S.phase !== 'full') togglePause(); }
+        if (K.pause) { K.pause = false; if (S.mode === 'match' && S.phase !== 'full') togglePause(); }
+        if (K.plan) { K.plan = false; if (S.mode === 'match' && S.phase !== 'full') openPlan(); }
+        if (S.mode === 'menu') { animatePlayers(rdt); updateCamera(rdt); renderer.render(scene, camera); return; }
+        if (S.paused) { renderer.render(scene, camera); return; }
+        var dt = rdt * (S.slowmo > 0 ? .35 : 1);
+        S.slowmo = Math.max(0, S.slowmo - rdt);
+        try {
+          if (S.freeze > 0) {
+            S.freeze -= rdt;
+            if (S.freeze <= 0 && S.pending) { var f = S.pending; S.pending = null; f(); }
+          } else if (S.phase === 'play') {
+            S.elapsed += dt; S.clock = S.elapsed / (S.settings.duration * 60) * 90;
+            if (S.half === 1 && S.clock >= 45) {
+              S.half = 2; S.attackDir = [-1, 1]; SND.whistle(2);
+              banner('پایان نیمه اول', 'تیم‌ها جای خود را عوض می‌کنند', 2000);
+              S.freeze = 2.2; S.pending = function () { kickoff(1); };
+            } else if (S.half === 2 && S.clock >= 90) endMatch();
+            else {
+              computeChasers(); handleUser(dt);
+              for (var i = 0; i < players.length; i++) {
+                var p = players[i];
+                if (!p.active || p === S.controlled[0] || (S.local2P && p === S.controlled[1])) continue;
+                if (p.isGK) { gkUpdate(p, dt); continue; }
+                if (p.state !== 'play') continue;
+                if (S.possession === p) carrierAI(p, dt);
+                else if (p.chase) chaseAI(p, dt);
+                else anchorAI(p);
+              }
+              movePlayers(dt);
+              resolvePlayerCollisions();
+              handleBallScramble(dt);
+              updateBall(dt);
+              advanceGameplay2(dt);
+              if (S.possession) S.poss[S.possession.team] += dt;
+              if (S.lastShot && now - S.lastShot.t < 2500 && Math.abs(bpos().x) > 50 && Math.abs(bpos().z) > 3.8) {
+                comment(['نزدیک بود!', 'اختلاف میلی‌متری با تیرک!', 'چه موقعیتی از دست رفت!']); S.lastShot = null;
+              }
+            }
+          }
+        } catch (err) { reportErr(err); }
+        animatePlayers(dt);
+        updateCamera(rdt);
+        if (S.phase !== 'full') updateHUD();
+        renderer.render(scene, camera);
+      }
+      var toastTimeout = null;
+      function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); if (toastTimeout) clearTimeout(toastTimeout); toastTimeout = setTimeout(function () { t.classList.remove('show'); }, 2400); }
+      function segInit(el, vals, cur, cb) {
+        for (var i = 0; i < vals.length; i++) {
+          (function (v) {
+            var b = document.createElement('button'); b.innerHTML = '<span>' + v.label + '</span>';
+            if (v.value === cur) b.classList.add('on');
+            b.onclick = function () {
+              var btns = el.querySelectorAll('button');
+              for (var j = 0; j < btns.length; j++)btns[j].classList.remove('on');
+              b.classList.add('on'); cb(v.value); if (SND.burst) SND.burst(.03, 1800, .1);
+            };
+            el.appendChild(b);
+          })(vals[i]);
+        }
+      }
+      function updateTeamUI() {
+        var h = TEAMS[selected.home], a = TEAMS[selected.away];
+        $('homeTeamName').textContent = h.name; $('awayTeamName').textContent = a.name;
+        $('homeCrest').textContent = h.short; $('awayCrest').textContent = a.short; $('sbHomeName').textContent = h.short; $('sbAwayName').textContent = a.short;
+        $('scH').textContent = S.score[0]; $('scA').textContent = S.score[1];
+        function mk(root, side) {
+          var el = $(root); el.innerHTML = '';
+          for (var i = 0; i < TEAMS.length; i++) {
+            (function (t, idx) {
+              var b = document.createElement('button');
+              b.className = 'teamChip' + (selected[side] === idx ? ' on' : '');
+              b.innerHTML = '<span class="teamDot" style="background:#' + t.jersey.toString(16).padStart(6, '0') + '"></span>' + t.name + ' <small>' + t.short + '</small>';
+              b.onclick = function () {
+                if (side === 'away' && idx === selected.home) { toast('تیم حریف نمی‌تواند با تیم شما یکی باشد'); return; }
+                if (side === 'home' && idx === selected.away) { toast('یک تیم را همزمان نمی‌توان دو طرف انتخاب کرد'); return; }
+                selected[side] = idx; updateTeamUI();
+              };
+              el.appendChild(b);
+            })(TEAMS[i], i);
+          }
+        }
+        mk('homeTeams', 'home'); mk('awayTeams', 'away');
+      }
+      var planSide = 0;
+      function updatePlanUI() {
+        var sideEl = $('planSide'); sideEl.innerHTML = '';
+        for (var i = 0; i < 2; i++) {
+          (function (idx) {
+            var b = document.createElement('button'); b.className = 'planBtn' + (planSide === idx ? ' on' : '');
+            b.textContent = idx === 0 ? 'تیم شما' : 'حریف';
+            b.onclick = function () { planSide = idx; updatePlanUI(); };
+            sideEl.appendChild(b);
+          })(i);
+        }
+        var formEl = $('planFormation'); formEl.innerHTML = '';
+        var formKeys = Object.keys(FORMATIONS);
+        for (var fi = 0; fi < formKeys.length; fi++) {
+          (function (k) {
+            var b = document.createElement('button'); b.className = 'planBtn' + (PLANS[planSide].formation === k ? ' on' : '');
+            b.textContent = k;
+            b.onclick = function () { PLANS[planSide].formation = k; recomputeBases(); updatePlanUI(); };
+            formEl.appendChild(b);
+          })(formKeys[fi]);
+        }
+        var mentEl = $('planMentality'); mentEl.innerHTML = '';
+        for (var mi = 0; mi < PLAN_PRESETS.length; mi++) {
+          (function (x) {
+            var b = document.createElement('button'); b.className = 'planBtn' + (PLANS[planSide].mentality === x.key ? ' on' : '');
+            b.textContent = x.label;
+            b.onclick = function () { PLANS[planSide].mentality = x.key; recomputeBases(); updatePlanUI(); };
+            mentEl.appendChild(b);
+          })(PLAN_PRESETS[mi]);
+        }
+        var prEl = $('planPress'); prEl.innerHTML = '';
+        var pressKeys = Object.keys(PRESS);
+        for (var pi = 0; pi < pressKeys.length; pi++) {
+          (function (k) {
+            var b = document.createElement('button'); b.className = 'planBtn' + (PLANS[planSide].press === k ? ' on' : '');
+            b.textContent = PRESS[k].label;
+            b.onclick = function () { PLANS[planSide].press = k; updatePlanUI(); };
+            prEl.appendChild(b);
+          })(pressKeys[pi]);
+        }
+      }
+      function leagueFixtureFor(round, club) {
+        var games = LEAGUE_ROUNDS[round] || [];
+        for (var i = 0; i < games.length; i++) {
+          if (games[i][0] === club) return games[i][1];
+          if (games[i][1] === club) return games[i][0];
+        }
+        return -1;
+      }
+      function leagueOtherFixture(round, club) {
+        var games = LEAGUE_ROUNDS[round] || [];
+        for (var i = 0; i < games.length; i++) {
+          if (games[i][0] !== club && games[i][1] !== club) return games[i];
+        }
+        return null;
+      }
+      function leagueRecord(home, away, hs, as) {
+        var h = league.table.find(function (r) { return r.team === home; });
+        var a = league.table.find(function (r) { return r.team === away; });
+        if (!h || !a) return;
+        h.p++; a.p++; h.gf += hs; h.ga += as; a.gf += as; a.ga += hs;
+        if (hs > as) { h.w++; h.pts += 3; a.l++; }
+        else if (hs < as) { a.w++; a.pts += 3; h.l++; }
+        else { h.d++; a.d++; h.pts++; a.pts++; }
+      }
+      function leagueSortTable() {
+        league.table.sort(function (a, b) {
+          var gdA = a.gf - a.ga, gdB = b.gf - b.ga;
+          if (b.pts !== a.pts) return b.pts - a.pts;
+          if (gdB !== gdA) return gdB - gdA;
+          if (b.gf !== a.gf) return b.gf - a.gf;
+          return a.team - b.team;
+        });
+      }
+      function leagueInitialise() {
+        league.active = true; league.done = false; league.round = 0;
+        league.results = []; league.currentFixture = null; league.pendingNext = false;
+        league.table = makeLeagueTable();
+      }
+      function leagueRender() {
+        var teamRoot = $('leagueTeams'); teamRoot.innerHTML = '';
+        for (var i = 0; i < TEAMS.length; i++) {
+          (function (idx) {
+            var b = document.createElement('button');
+            b.className = 'teamChip' + (league.club === idx ? ' on' : '');
+            b.innerHTML = '<span class="teamDot" style="background:#' + TEAMS[idx].jersey.toString(16).padStart(6, '0') + '"></span>' + TEAMS[idx].name + ' <small>' + TEAMS[idx].short + '</small>';
+            b.onclick = function () {
+              if (league.active && league.round > 0) { toast('برای تغییر تیم، فصل را از ابتدا شروع کنید'); return; }
+              league.club = idx; leagueRender();
+            };
+            teamRoot.appendChild(b);
+          })(i);
+        }
+        leagueSortTable();
+        var html = '<tr><th>#</th><th>تیم</th><th>بازی</th><th>برد</th><th>مساوی</th><th>باخت</th><th>تفاضل</th><th>امتیاز</th></tr>';
+        for (var r = 0; r < league.table.length; r++) {
+          var row = league.table[r], gd = row.gf - row.ga;
+          html += '<tr class="' + (row.team === league.club ? 'leagueYou' : '') + '">' +
+            '<td>' + (r + 1) + '</td><td>' + TEAMS[row.team].name + (row.team === league.club ? ' ★' : '') + '</td>' +
+            '<td>' + row.p + '</td><td>' + row.w + '</td><td>' + row.d + '</td><td>' + row.l + '</td>' +
+            '<td>' + (gd > 0 ? '+' : '') + gd + '</td><td><b>' + row.pts + '</b></td></tr>';
+        }
+        $('leagueTable').innerHTML = html;
+        if (league.done) {
+          $('leagueNext').textContent = 'قهرمان: ' + TEAMS[league.table[0].team].name + ' 🏆';
+          $('leagueRound').textContent = 'فصل تمام شد · برای فصل جدید دوباره شروع کنید';
+          $('leagueStart').textContent = 'فصل جدید';
+        } else if (!league.active) {
+          var firstOpp = leagueFixtureFor(0, league.club);
+          $('leagueNext').textContent = TEAMS[league.club].name + ' آماده ورود به لیگ';
+          $('leagueRound').textContent = firstOpp >= 0 ? 'هفته ۱ · ' + TEAMS[league.club].name + ' × ' + TEAMS[firstOpp].name : '';
+          $('leagueStart').textContent = 'شروع لیگ';
+        } else {
+          var opp = leagueFixtureFor(league.round, league.club);
+          $('leagueNext').textContent = opp >= 0 ? TEAMS[league.club].name + ' × ' + TEAMS[opp].name : 'پایان فصل';
+          $('leagueRound').textContent = opp >= 0 ? 'هفته ' + (league.round + 1) + ' از ۳ · مسابقه رسمی فصل' : '';
+          $('leagueStart').textContent = opp >= 0 ? 'بازی بعدی' : 'فصل جدید';
+        }
+      }
+      function openLeague() { menuFocus = 0; leagueRender(); $('leaguePanel').classList.remove('hidden'); }
+      function closeLeague() { $('leaguePanel').classList.add('hidden'); }
+      function startLeagueMatch() {
+        if (league.done || !league.active) leagueInitialise();
+        var opponent = leagueFixtureFor(league.round, league.club);
+        if (opponent < 0) { league.done = true; leagueRender(); return; }
+        selected.home = league.club; selected.away = opponent;
+        S.local2P = false; S.settings.mode = 'single'; S.settings.gameMode = 'single'; saveSettings();
+        league.currentFixture = { home: league.club, away: opponent, round: league.round };
+        league.pendingNext = false;
+        $('leaguePanel').classList.add('hidden');
+        startMatch();
+      }
+      function finishLeagueMatch() {
+        if (!league.active || !league.currentFixture) return;
+        var f = league.currentFixture, hs = S.score[0], as = S.score[1];
+        league.results.push({ round: f.round, home: f.home, away: f.away, hs: hs, as: as, user: true });
+        leagueRecord(f.home, f.away, hs, as);
+        var other = leagueOtherFixture(f.round, league.club);
+        if (other) {
+          var oh = Math.floor(Math.random() * 4), oa = Math.floor(Math.random() * 4);
+          league.results.push({ round: f.round, home: other[0], away: other[1], hs: oh, as: oa, user: false });
+          leagueRecord(other[0], other[1], oh, oa);
+        }
+        league.round++; league.currentFixture = null; league.pendingNext = true;
+        if (league.round >= LEAGUE_ROUNDS.length) league.done = true;
+        leagueSortTable();
+        $('fRematch').textContent = league.done ? 'فصل جدید' : 'ادامه لیگ';
+        $('fMenu').textContent = league.done ? 'منوی اصلی' : 'منوی لیگ';
+      }
+      function continueLeagueFromResult() {
+        $('fullOv').classList.add('hidden'); $('hud').classList.add('hidden'); S.paused = false;
+        leagueRender(); $('leaguePanel').classList.remove('hidden'); S.mode = 'league';
+      }
+
+      function openPlan() { menuFocus = 0; updatePlanUI(); if (S.inPreMatch) $('preMatch').classList.add('hidden'); $('planPanel').classList.remove('hidden'); if (S.mode === 'match') { S.paused = true; $('pauseOv').classList.add('hidden'); } }
+      function closePlan() { if (S.mode === 'match') S.paused = false; $('planPanel').classList.add('hidden'); if (S.inPreMatch) $('preMatch').classList.remove('hidden'); }
+      function openTeams() { menuFocus = 0; updateTeamUI(); $('teamPanel').classList.remove('hidden'); }
+      function closeTeams() { $('teamPanel').classList.add('hidden'); if (S.inPreMatch) { updatePreMatchUI(); $('preMatch').classList.remove('hidden'); } }
+      if ($('gMode')) $('gMode').innerHTML = '<span style="font-weight:800;color:var(--lime)">تک‌نفره</span>'; S.settings.mode = 'single'; saveSettings();
+      segInit($('gGameMode'), [{ label: 'خودکار', value: 'auto' }, { label: 'تک‌نفره', value: 'single' }, { label: 'دونفره', value: 'two' }], S.settings.gameMode || 'auto', function (v) { S.settings.gameMode = v; saveSettings(); if (S.mode === 'match') refreshControlMode(true); });
+      segInit($('gDur'), [{ label: '۳ دقیقه', value: 3 }, { label: '۶ دقیقه', value: 6 }, { label: '۹ دقیقه', value: 9 }], S.settings.duration, function (v) { S.settings.duration = v; saveSettings(); });
+      segInit($('gDiff'), [{ label: 'تازه‌کار', value: 0 }, { label: 'حرفه‌ای', value: 1 }, { label: 'افسانه‌ای', value: 2 }], S.settings.difficulty, function (v) { S.settings.difficulty = v; saveSettings(); });
+      segInit($('gCam'), [{ label: 'برادکست', value: 0 }, { label: 'عریض', value: 1 }, { label: 'تاکتیکال', value: 2 }], S.settings.camera, function (v) { S.settings.camera = v; saveSettings(); });
+      segInit($('gTouch'), [{ label: 'روشن', value: true }, { label: 'خاموش', value: false }], S.settings.touchEnabled !== false, function (v) { S.settings.touchEnabled = !!v; TOUCH.enabled = !!v; if (!TOUCH.enabled) clearTouchState(); saveSettings(); if (S.mode === 'match') refreshControlMode(true); });
+      if ($('btnLeague')) $('btnLeague').onclick = openLeague;
+      if ($('leagueClose')) $('leagueClose').onclick = closeLeague;
+      if ($('leagueStart')) $('leagueStart').onclick = startLeagueMatch;
+      if ($('btnTeams')) $('btnTeams').onclick = openTeams;
+      if ($('teamClose')) $('teamClose').onclick = closeTeams;
+      if ($('pmGamePlanBtn')) $('pmGamePlanBtn').onclick = openPlan;
+      if ($('pmSettingsBtn')) $('pmSettingsBtn').onclick = function () {
+        menuFocus = 0; $('preMatch').classList.add('hidden'); $('settingsPanel').classList.remove('hidden');
+      };
+      if ($('pmTeamsBtn')) $('pmTeamsBtn').onclick = openTeams;
+      if ($('pmControlsBtn')) $('pmControlsBtn').onclick = function () {
+        menuFocus = 0; $('preMatch').classList.add('hidden'); $('helpPanel').classList.remove('hidden');
+      };
+      if ($('pmKickoff')) $('pmKickoff').onclick = startMatch;
+      if ($('btnPlan')) $('btnPlan').onclick = openPlan;
+      if ($('planClose')) $('planClose').onclick = closePlan;
+      if ($('btnHudPlan')) $('btnHudPlan').onclick = openPlan;
+      if ($('btnSettings')) $('btnSettings').onclick = function () {
+        menuFocus = 0; $('settingsPanel').classList.remove('hidden');
+      };
+      if ($('setClose')) $('setClose').onclick = function () {
+        $('settingsPanel').classList.add('hidden');
+        if (S.inPreMatch) { updatePreMatchUI(); $('preMatch').classList.remove('hidden'); }
+      };
+      if ($('btnHelp')) $('btnHelp').onclick = function () {
+        menuFocus = 0; $('helpPanel').classList.remove('hidden');
+      };
+      if ($('helpClose')) $('helpClose').onclick = function () {
+        $('helpPanel').classList.add('hidden');
+        if (S.inPreMatch) $('preMatch').classList.remove('hidden');
+      };
+      function rebuildTeamsForMatch() {
+        for (var i = 0; i < players.length; i++) { try { scene.remove(players[i].g); } catch (e) { } }
+        players.length = 0;
+        spawnTeams();
+        recomputeBases();
+        for (var j = 0; j < players.length; j++) { var p = players[j]; p.pos.set(p.baseX, 0, p.baseZ); p.g.position.copy(p.pos); p.g.visible = true; }
+      }
+
+      function kitHex(v) { return '#' + Number(v).toString(16).padStart(6, '0'); }
+      function buildPreLineup(rootId, teamIdx) {
+        var root = $(rootId); if (!root) return;
+        var squad = NAMES[teamIdx] || NAMES[0];
+        var roles = ['GK','CB','CB','RB','LB','DMF','AMF','AMF','RWF','LWF','CF'];
+        root.innerHTML = '';
+        for (var i = 0; i < 11; i++) {
+          var row = document.createElement('div');
+          row.className = 'pmLine';
+          row.innerHTML = '<span class="pmPos">' + roles[i] + '</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + squad[i] + '</span>';
+          root.appendChild(row);
+        }
+      }
+      function updatePreMatchUI() {
+        var h = TEAMS[selected.home], a = TEAMS[selected.away];
+        $('pmHomeCrest').textContent = h.short; $('pmAwayCrest').textContent = a.short;
+        $('pmHomeName').textContent = h.name; $('pmAwayName').textContent = a.name;
+        $('pmHomeShirt').style.background = h.kitStyle === 'barca' ? 'repeating-linear-gradient(90deg,#081b3a 0 22px,#7a1731 22px 44px)' : h.kitStyle === 'realmadrid' ? 'linear-gradient(135deg,#f4f4f2 0 72%,#123b2a 72% 80%,#e45c86 80% 86%,#f4f4f2 86%)' : kitHex(h.jersey); $('pmHomeShorts').style.background = kitHex(h.shorts);
+        $('pmHomeSock').style.background = kitHex(h.sock); $('pmHomeSock2').style.background = kitHex(h.sock);
+        $('pmAwayShirt').style.background = a.kitStyle === 'barca' ? 'repeating-linear-gradient(90deg,#081b3a 0 22px,#7a1731 22px 44px)' : a.kitStyle === 'realmadrid' ? 'linear-gradient(135deg,#f4f4f2 0 72%,#123b2a 72% 80%,#e45c86 80% 86%,#f4f4f2 86%)' : kitHex(a.jersey); $('pmAwayShorts').style.background = kitHex(a.shorts);
+        $('pmAwaySock').style.background = kitHex(a.sock); $('pmAwaySock2').style.background = kitHex(a.sock);
+        buildPreLineup('pmHomeLineup', selected.home); buildPreLineup('pmAwayLineup', selected.away);
+        $('pmMiniHome').textContent = h.short; $('pmMiniAway').textContent = a.short;
+        $('pmMiniHomeName').textContent = h.name; $('pmMiniAwayName').textContent = a.name;
+        var hl = /پرسپولیس|استقلال/.test(h.name) ? 'IRAN · PRO LEAGUE' : 'SPAIN · LALIGA';
+        var al = /پرسپولیس|استقلال/.test(a.name) ? 'IRAN · PRO LEAGUE' : 'SPAIN · LALIGA';
+        $('pmHomeLeague').textContent = hl; $('pmAwayLeague').textContent = al;
+        $('pmHomeFormTag').textContent = (PLANS[selected.home] && PLANS[selected.home].formation) || '4-3-3';
+        $('pmAwayFormTag').textContent = (PLANS[selected.away] && PLANS[selected.away].formation) || '4-3-3';
+        $('pmLeagueName').textContent = S.settings.mode === 'league' ? 'LEAGUE · ۲۰۲۶/۲۷' : 'MATCH ROOM · ۲۰۲۶/۲۷';
+      }
+      function openPreMatch() {
+        menuFocus = 0; updateTeamUI(); updatePreMatchUI();
+        S.inPreMatch = true; $('menu').classList.add('hidden'); $('preMatch').classList.remove('hidden');
+        var btns = visibleButtons($('preMatch')), k = btns.indexOf($('pmKickoff'));
+        setFocusedButton(btns, k >= 0 ? k : 0);
+      }
+      function closePreMatch() {
+        S.inPreMatch = false; $('preMatch').classList.add('hidden'); $('menu').classList.remove('hidden'); menuFocus = 0;
+      }
+
+      function startMatch() {
+        keys = {}; keyNames = {}; inputState.x = 0; inputState.z = 0;
+        // Control mode is selected in Match Settings and resolved from connected controllers/touch.
+        S.local2P = false;
+        // Do not inherit a controller from the previous match/mode.
+        clearControlledTeam(0);
+        clearControlledTeam(1);
+        var teamChanged = S.matchTeams[0] !== selected.home || S.matchTeams[1] !== selected.away;
+        S.matchTeams = [selected.home, selected.away];
+        if (teamChanged) rebuildTeamsForMatch(); else recomputeBases();
+        SND.init();
+        S.inPreMatch = false; $('preMatch').classList.add('hidden');
+        $('menu').classList.add('hidden'); $('leaguePanel').classList.add('hidden'); $('hud').classList.remove('hidden');
+        $('pauseOv').classList.add('hidden'); $('fullOv').classList.add('hidden');
+        $('sb').querySelector('.sbTeam.h').textContent = TEAMS[selected.home].short;
+        $('sb').querySelector('.sbTeam.a').textContent = TEAMS[selected.away].short;
+        S.mode = 'match'; S.paused = false; S.score = [0, 0]; S.shots = [0, 0]; S.poss = [0, 0]; S.fouls = [0, 0]; S.cards = [0, 0]; S.saves = [0, 0];
+        S.clock = 0; S.elapsed = 0; S.half = 1; S.attackDir = [1, -1]; S.slowmo = 0; S.freeze = 0; S.pending = null;
+        for (var i = 0; i < players.length; i++) { players[i].active = true; }
+        camPos.set(0, 25, 38); camLook.set(0, 0, 0); camera.position.copy(camPos); camera.lookAt(camLook);
+        banner('شروع مسابقه', TEAMS[S.matchTeams[0]].name + ' × ' + TEAMS[S.matchTeams[1]].name, 1800);
+        refreshControlMode(false);
+        kickoff(0); showHint();
+      }
+      var showHintTimeout = null;
+      function showHint() {
+        var h = $('hint');
+        var count = connectedGamepadCount(), touch = teamUsesTouch(0);
+        if (S.local2P) {
+          h.textContent = (touch ? 'دونفره: نفر ۱ با تاچ · نفر ۲ با دسته' : 'دونفره: نفر ۱ با دسته · نفر ۲ با دسته') + ' · A پاس · B تکل · Y پاس بلند · X شوت · LB سوییچ · LT دروازه‌بان · RB سرعت';
+        } else {
+          h.textContent = touch ? 'تک‌نفره: تاچ · استیک حرکت · A پاس · B تکل · Y پاس بلند · X شوت · LB سوییچ · LT دروازه‌بان · RB سرعت' : (count ? 'تک‌نفره: دسته · A پاس · B تکل · Y پاس بلند · X شوت · LB سوییچ · LT دروازه‌بان · RB سرعت' : 'WASD حرکت · X پاس · C شوت (نگه‌دار) · V اسلاید · Q سوییچ · Shift اسپرینت');
+        }
+        h.style.opacity = 1;
+        if (showHintTimeout) clearTimeout(showHintTimeout);
+        showHintTimeout = setTimeout(function () { h.style.opacity = 0; }, 9000);
+      }
+      $('btnPlay').onclick = openPreMatch;
+      function togglePause() {
+        if (S.mode !== 'match' || S.phase === 'full') return;
+        S.paused = !S.paused;
+        $('pauseOv').classList.toggle('hidden', !S.paused);
+      }
+      $('btnPause').onclick = function () { menuFocus = 0; togglePause(); };
+      $('pResume').onclick = function () { menuFocus = 0; togglePause(); };
+      $('pRestart').onclick = function () { S.paused = false; $('pauseOv').classList.add('hidden'); startMatch(); };
+      $('pMenu').onclick = function () { S.paused = false; $('pauseOv').classList.add('hidden'); toMenu(); };
+      $('fRematch').onclick = function () {
+        if (league.active && league.pendingNext) continueLeagueFromResult();
+        else startMatch();
+      };
+      $('fMenu').onclick = function () {
+        if (league.active && league.pendingNext && !league.done) {
+          $('fullOv').classList.add('hidden'); $('hud').classList.add('hidden'); S.mode = 'league'; openLeague();
+        } else {
+          toMenu();
+        }
+      };
+      $('btnMute').onclick = function () { SND.muted = !SND.muted; $('btnMute').textContent = SND.muted ? '🔇' : '🔊'; };
+      function toMenu() {
+        menuFocus = 0; S.mode = 'menu'; S.phase = 'idle';
+        $('hud').classList.add('hidden'); $('fullOv').classList.add('hidden');
+        $('planPanel').classList.add('hidden'); $('teamPanel').classList.add('hidden'); $('leaguePanel').classList.add('hidden');
+        $('menu').classList.remove('hidden'); updateTeamUI();
+      }
+      $('ctrlHint').innerHTML = '<span><b>WASD</b> حرکت</span><span><b>X</b> پاس</span><span><b>Y</b> پاس بلند</span><span><b>C</b> شوت</span><span><b>Q</b> سوییچ</span><span><b>دسته:</b> A پاس · B تکل · Y پاس بلند · X شوت · LB سوییچ · LT دروازه‌بان · RB سرعت</span>';
+      updateTeamUI(); leagueRender(); buildStadium(); spawnTeams(); spawnBall(); spawnIndicators(); updatePlanUI();
+      recomputeBases();
+      for (var pi = 0; pi < players.length; pi++) { players[pi].pos.set(players[pi].baseX, 0, players[pi].baseZ); players[pi].g.position.copy(players[pi].pos); }
+      bpos().set(0, BALL_R, 0);
+      $('boot').remove();
+      loop();
+    }).catch(function (e) {
+      var boot = document.getElementById("boot");
+      if (boot) boot.textContent = "خطا: موتور سه‌بعدی بارگذاری نشد. اینترنت/دسترسی CDN را بررسی کنید.";
+      console.error(e);
+    });
+  </script>
+</body>
+
+</html>
